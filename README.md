@@ -1,5 +1,5 @@
 # 🚀 Advanced AI-Powered Knowledge Hub
-
+This project is a personal knowledge management system that uses AI to understand, summarize, and answer questions from various document formats (PDF, images, text) uploaded by the user.
 ## 🛠️ Tech Stack
 
 - **Frontend:** Next.js, React, Tailwind CSS
