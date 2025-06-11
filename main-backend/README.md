@@ -20,3 +20,27 @@
 ### API endpoint
 - [x] first api endpoint run port 3000 local
     - [x] api return list of all table for debuging
+- [ ] Design RESTful API endpoints
+    - [ ] Define clear resource naming conventions
+    - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
+    - [ ] Document endpoints with OpenAPI/Swagger
+- [ ] Implement input validation and error handling
+    - [ ] Validate request payloads
+    - [ ] Return meaningful error messages and status codes
+- [ ] Add authentication and authorization
+    - [ ] Implement JWT or OAuth2
+    - [ ] Protect sensitive endpoints
+- [ ] Write unit and integration tests for endpoints
+    - [ ] Use a testing framework (e.g., Jest, Mocha)
+    - [ ] Mock database and external dependencies
+- [ ] Set up logging and monitoring
+    - [ ] Log requests and errors
+    - [ ] Integrate with monitoring tools
+
+    ### Suggested Git Branches
+
+    - `feature/api-design`
+    - `feature/api-validation`
+    - `feature/api-auth`
+    - `feature/api-testing`
+    - `feature/api-logging`
