@@ -13,6 +13,7 @@
 ### Phase 1: Setup & Foundations (Week 1)
 - [x] Plan architecture and select Tech Stack
 - [x] Set up Monorepo Git repository structure
+- [ ] Set up Relational Database Schematic
 - [ ] Configure `docker-compose.yml` for local development
 - [ ] Create basic User Authentication API (Register/Login) in `main-backend`
 - [ ] Create basic UI for Login/Register/Dashboard in `frontend`
