@@ -1,6 +1,8 @@
-import { Request, Response,RequestHandler } from 'express';
-import { RegisterUserUseCase } from '../../../application/use-cases/auth/RegisterUser.usecase';
-import { PostgresUserRepository } from '../../database/postgres/PostgresUserRepository';
+import { Request, Response, RequestHandler } from "express";
+import { RegisterUserUseCase } from "../../../application/use-cases/auth/RegisterUser.usecase";
+import { PostgresUserRepository } from "../../database/postgres/PostgresUserRepository";
+import { UserResponseDto } from "../../../application/dtos/user.dto";
+
 // หมายเหตุ: LoginUserUseCase จะถูกสร้างในขั้นตอนต่อไป
 // import { LoginUserUseCase } from '../../../application/use-cases/auth/LoginUser.usecase';
 
@@ -9,28 +11,32 @@ import { PostgresUserRepository } from '../../database/postgres/PostgresUserRepo
 const userRepository = new PostgresUserRepository();
 
 export const register: RequestHandler = async (req, res) => {
-    // ดึง email และ password จาก request body
-    const { email, password } = req.body;
+  // ดึง email และ password จาก request body
+  const { email, password } = req.body;
 
-    // ตรวจสอบข้อมูลเบื้องต้น
-    if (!email || !password) {
-        res.status(400).json({ success: false, message: 'Email and password are required' });
-    }
+  // ตรวจสอบข้อมูลเบื้องต้น
+  if (!email || !password) {
+    res
+      .status(400)
+      .json({ success: false, message: "Email and password are required" });
+  }
 
-    try {
-        // สร้างและเรียกใช้ RegisterUserUseCase
-        const registerUserUseCase = new RegisterUserUseCase(userRepository);
-        const user = await registerUserUseCase.execute(email, password);
-        
-        // เราจะไม่ส่ง password hash กลับไป
-        const { password_hash, ...userResponse } = user;
+  try {
+    // สร้างและเรียกใช้ RegisterUserUseCase
+    const registerUserUseCase = new RegisterUserUseCase(userRepository);
+    const user = await registerUserUseCase.execute(email, password);
 
-        res.status(201).json({ success: true, data: userResponse });
-
-    } catch (error: any) {
-        // จัดการ Error ที่อาจจะถูกโยนมาจาก Use Case (เช่น อีเมลซ้ำ)
-        res.status(400).json({ success: false, message: error.message });
-    }
+    // แปลงข้อมูล User เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
+    const userResponse: UserResponseDto = {
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+    };
+    res.status(201).json({ success: true, data: userResponse });
+  } catch (error: any) {
+    // จัดการ Error ที่อาจจะถูกโยนมาจาก Use Case (เช่น อีเมลซ้ำ)
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 // export const login = async (req: Request, res: Response) => {
