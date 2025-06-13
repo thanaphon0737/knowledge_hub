@@ -23,21 +23,21 @@ services:
   # ----------------------------------------
   # 2. Node.js Application Service
   # ----------------------------------------
-  node_app:
-    build: .
-    ports:
-      - ${NODE_PORT}:3000
-    env_file:
-      - .env
-    environment:
-      NODE_ENV: development
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      db:
-        condition: service_healthy
-    command: nodemon app.js
+  # node_app:
+  #   build: .
+  #   ports:
+  #     - ${NODE_PORT}:3000
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     NODE_ENV: development
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   command: nodemon app.js
 
 volumes:
   db_data:
