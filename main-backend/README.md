@@ -33,6 +33,8 @@
             - [ ] pass all test case
         - [x] response in DTO for security
     - [ ] login
+        - [ ] middleware authentication
+        - [ ] unit test for login
     - [ ] Implement JWT or OAuth2
     - [ ] Protect sensitive endpoints
 - [ ] Write unit and integration tests for endpoints
