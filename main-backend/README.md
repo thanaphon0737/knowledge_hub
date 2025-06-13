@@ -28,6 +28,11 @@
     - [ ] Validate request payloads
     - [ ] Return meaningful error messages and status codes
 - [ ] Add authentication and authorization
+    - [x] register
+        - [x] unit test for register
+            - [ ] pass all test case
+        - [x] response in DTO for security
+    - [ ] login
     - [ ] Implement JWT or OAuth2
     - [ ] Protect sensitive endpoints
 - [ ] Write unit and integration tests for endpoints
