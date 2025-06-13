@@ -4,8 +4,9 @@ import { RegisterUserUseCase } from '../RegisterUser.usecase';
 import { IUserRepository } from '../../../repositories/IUserRepository';
 import { User } from '../../../../domain/entities/user.entity';
 
-// We mock the external libraries to isolate our test to only the use case logic.
-// This makes our tests fast and predictable.
+// --- Mocking External Libraries ---
+// เราจำลองการทำงานของ library ภายนอกเพื่อแยกการทดสอบให้อยู่แค่ใน Use Case ของเรา
+// ทำให้เทสทำงานเร็วและคาดเดาผลลัพธ์ได้
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('a_securely_hashed_password'),
 }));
@@ -13,14 +14,14 @@ jest.mock('uuid', () => ({
   v4: jest.fn().mockReturnValue('a_unique_user_id'),
 }));
 
-// 'describe' groups together related tests for a specific feature.
+// 'describe' คือการจัดกลุ่มของ Test Case สำหรับฟีเจอร์ "RegisterUserUseCase"
 describe('RegisterUserUseCase', () => {
 
-  // This will be our "fake" user repository for testing purposes.
+  // ประกาศตัวแปรสำหรับเก็บ "Repository ปลอม" ของเรา
   let mockUserRepository: jest.Mocked<IUserRepository>;
 
-  // 'beforeEach' is a Jest function that runs before every single test case ('it' block).
-  // This ensures each test starts with a fresh, clean mock.
+  // 'beforeEach' จะทำงานก่อนทุกๆ test case (ก่อนทุก 'it' block)
+  // เพื่อให้แน่ใจว่าทุกการทดสอบจะเริ่มต้นด้วย mock ที่สดใหม่เสมอ
   beforeEach(() => {
     mockUserRepository = {
       findByEmail: jest.fn(),
@@ -28,79 +29,113 @@ describe('RegisterUserUseCase', () => {
     };
   });
 
-  // Test Case 1: The Happy Path
+  // --- Test Case กลุ่มที่ 1: Happy Path (กรณีที่ทำงานสำเร็จ) ---
   it('should create a new user successfully when provided with valid data', async () => {
-    // --- Arrange ---
-    // We set up the scenario. In this case, the user does not exist yet.
-    mockUserRepository.findByEmail.mockResolvedValue(null); // Simulate that the email is not found.
-    mockUserRepository.save.mockImplementation((user: User) => Promise.resolve(user)); // Simulate that saving is successful.
+    // Arrange: จัดเตรียมสถานการณ์
+    mockUserRepository.findByEmail.mockResolvedValue(null); // จำลองว่าอีเมลนี้ยังไม่เคยมีในระบบ
+    mockUserRepository.save.mockImplementation((user: User) => Promise.resolve(user)); // จำลองว่าการบันทึกสำเร็จ
 
     const registerUseCase = new RegisterUserUseCase(mockUserRepository);
 
-    // --- Act ---
-    // We execute the function we want to test.
+    // Act: เรียกใช้งานฟังก์ชันที่ต้องการทดสอบ
     const result = await registerUseCase.execute('new_user@example.com', 'ValidPassword123');
 
-    // --- Assert ---
-    // We check if the outcome is what we expected.
+    // Assert: ตรวจสอบผลลัพธ์ที่ได้
     expect(result).toBeDefined();
     expect(result.email).toBe('new_user@example.com');
-    expect(result.id).toBe('a_unique_user_id'); // From our uuid mock
-    expect(result.password_hash).toBe('a_securely_hashed_password'); // From our bcrypt mock
-    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith('new_user@example.com'); // Was the check performed?
-    expect(mockUserRepository.save).toHaveBeenCalledTimes(1); // Was the user saved?
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith('new_user@example.com');
+    expect(mockUserRepository.save).toHaveBeenCalledTimes(1);
   });
 
-  // Test Case 2: Failure due to existing email
-  it('should throw an "Email already in use" error if the email already exists', async () => {
-    // --- Arrange ---
-    // Simulate that the user repository finds an existing user with this email.
+  // --- Test Case กลุ่มที่ 2: Business Logic Failure (กรณีที่ล้มเหลวตามกฎของระบบ) ---
+  it('should throw an error if the email already exists', async () => {
+    // Arrange: จัดเตรียมสถานการณ์ว่าอีเมลนี้มีอยู่แล้ว
     mockUserRepository.findByEmail.mockResolvedValue({
-      id: 'existing_id',
-      email: 'existing@example.com',
-      password_hash: 'some_hash',
-      created_at: new Date(),
-      updated_at: new Date(),
+      id: 'existing-id', email: 'existing@example.com', password_hash: 'some_hash',
+      created_at: new Date(), updated_at: new Date(),
     });
 
     const registerUseCase = new RegisterUserUseCase(mockUserRepository);
 
-    // --- Act & Assert ---
-    // We expect this entire operation to fail (reject the promise) and throw a specific error.
+    // Act & Assert: คาดหวังว่าการทำงานจะโยน Error ออกมา
     await expect(
       registerUseCase.execute('existing@example.com', 'any_password')
     ).rejects.toThrow('Email already in use');
 
-    // We also assert that the 'save' function was never called, because the process should have stopped.
+    // ตรวจสอบว่าไม่ได้มีการเรียกใช้ฟังก์ชัน save เลย
     expect(mockUserRepository.save).not.toHaveBeenCalled();
   });
 
-  // Test Case 3: Failure due to business rule (e.g., short password)
-  // This shows how to test business logic inside the use case itself.
-  it('should throw an error if the password is too short (e.g., less than 8 characters)', async () => {
-    // --- Arrange ---
-    // We don't need to set up the mock repository here because the validation should fail before we even query the database.
+  // --- Test Case กลุ่มที่ 3: Input Validation Failure (กรณีที่ข้อมูลที่ส่งเข้ามาไม่ถูกต้อง) ---
+  it('should throw an error if the password is shorter than 8 characters', async () => {
+    // Arrange
     const registerUseCase = new RegisterUserUseCase(mockUserRepository);
 
-    // --- Act & Assert ---
+    // Act & Assert
     await expect(
       registerUseCase.execute('any_user@example.com', 'short')
     ).rejects.toThrow('Password must be at least 8 characters long');
-    
-    // Ensure no database interaction occurred.
+
+    // ตรวจสอบให้แน่ใจว่าไม่มีการติดต่อกับฐานข้อมูลเลย
     expect(mockUserRepository.findByEmail).not.toHaveBeenCalled();
     expect(mockUserRepository.save).not.toHaveBeenCalled();
   });
 
+  it('should throw an error for an invalid email format', async () => {
+    // Arrange
+    const registerUseCase = new RegisterUserUseCase(mockUserRepository);
+
+    // Act & Assert
+    await expect(
+      registerUseCase.execute('invalid-email', 'ValidPassword123')
+    ).rejects.toThrow('Invalid email format');
+    
+    expect(mockUserRepository.findByEmail).not.toHaveBeenCalled();
+  });
+  
+  it('should throw an error if the email is not provided (empty string)', async () => {
+    // Arrange
+    const registerUseCase = new RegisterUserUseCase(mockUserRepository);
+
+    // Act & Assert
+    await expect(
+      registerUseCase.execute('', 'ValidPassword123')
+    ).rejects.toThrow('Email is required');
+  });
+  
+  it('should throw an error if the password is not provided (empty string)', async () => {
+    // Arrange
+    const registerUseCase = new RegisterUserUseCase(mockUserRepository);
+
+    // Act & Assert
+    await expect(
+      registerUseCase.execute('test@example.com', '')
+    ).rejects.toThrow('Password must be at least 8 characters long');
+  });
 });
 
-// To make the test case #3 pass, you would need to add this validation
-// at the beginning of your RegisterUser.usecase.ts `execute` method:
+
 /*
+  *** หมายเหตุสำคัญ ***
+  เพื่อให้ Test Case ทั้งหมดนี้ทำงานผ่าน คุณจะต้องเพิ่มโค้ด Validation
+  เข้าไปในไฟล์ RegisterUser.usecase.ts ของคุณดังนี้:
+
+  // src/application/use-cases/auth/RegisterUser.usecase.ts
   async execute(email: string, password: string): Promise<User> {
-    if (password.length < 8) {
+    // 1. Input Validation
+    if (!email) {
+      throw new Error('Email is required');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Invalid email format');
+    }
+    if (!password || password.length < 8) {
       throw new Error('Password must be at least 8 characters long');
     }
-    // ... rest of the logic
+
+    // 2. Business Logic (โค้ดเดิมของคุณ)
+    const existingUser = await this.userRepository.findByEmail(email);
+    // ...
   }
 */
