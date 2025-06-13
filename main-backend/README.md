@@ -28,6 +28,8 @@
     - [ ] Validate request payloads
     - [ ] Return meaningful error messages and status codes
 - [ ] Add authentication and authorization
+    - [ ] register
+    - [ ] login
     - [ ] Implement JWT or OAuth2
     - [ ] Protect sensitive endpoints
 - [ ] Write unit and integration tests for endpoints
