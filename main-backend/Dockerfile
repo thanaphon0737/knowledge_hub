@@ -7,4 +7,4 @@ RUN npm install nodemon -g
 # Copy the rest of the application code 
 COPY . .
 EXPOSE 3000
-CMD ["node", "app.js"]
+CMD ["node", "src/app.js"]

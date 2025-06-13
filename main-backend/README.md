@@ -36,7 +36,9 @@
 - [ ] Set up logging and monitoring
     - [ ] Log requests and errors
     - [ ] Integrate with monitoring tools
-
+### clean architecture
+- [x] project structure for clean architecture
+- [x] first api end point health check on api/v1/healthy run on local
     ### Suggested Git Branches
 
     - `feature/api-design`
