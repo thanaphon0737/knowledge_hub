@@ -36,7 +36,8 @@
 - [ ] Set up logging and monitoring
     - [ ] Log requests and errors
     - [ ] Integrate with monitoring tools
-
+### clean architecture
+- [ ] project structure for clean architecture
     ### Suggested Git Branches
 
     - `feature/api-design`
