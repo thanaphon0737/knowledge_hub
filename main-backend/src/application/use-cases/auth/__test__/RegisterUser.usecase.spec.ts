@@ -25,6 +25,7 @@ describe('RegisterUserUseCase', () => {
   beforeEach(() => {
     mockUserRepository = {
       findByEmail: jest.fn(),
+      findById: jest.fn(),
       save: jest.fn(),
     };
   });
