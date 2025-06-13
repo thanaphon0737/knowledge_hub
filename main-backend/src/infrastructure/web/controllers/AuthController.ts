@@ -2,10 +2,7 @@ import { Request, Response, RequestHandler } from "express";
 import { RegisterUserUseCase } from "../../../application/use-cases/auth/RegisterUser.usecase";
 import { PostgresUserRepository } from "../../database/postgres/PostgresUserRepository";
 import { UserResponseDto } from "../../../application/dtos/user.dto";
-
-// หมายเหตุ: LoginUserUseCase จะถูกสร้างในขั้นตอนต่อไป
-// import { LoginUserUseCase } from '../../../application/use-cases/auth/LoginUser.usecase';
-
+import { LoginUserUseCase } from "../../../application/use-cases/auth/LoginUser.usecase";
 // -- สร้าง Instance ของ Repository --
 // ในแอปพลิเคชันจริง ส่วนนี้ควรจะทำผ่าน Dependency Injection ที่ main.ts
 const userRepository = new PostgresUserRepository();
@@ -19,6 +16,7 @@ export const register: RequestHandler = async (req, res) => {
     res
       .status(400)
       .json({ success: false, message: "Email and password are required" });
+    return;
   }
 
   try {
@@ -39,7 +37,34 @@ export const register: RequestHandler = async (req, res) => {
   }
 };
 
-// export const login = async (req: Request, res: Response) => {
-//     // ส่วนของ Login จะถูกสร้างในฟีเจอร์ถัดไป
-//     res.status(501).json({ success: false, message: 'Login feature not implemented yet.' });
-// };
+export const login: RequestHandler = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res
+      .status(400)
+      .json({ success: false, message: "Email and password are required" });
+    return;
+  }
+
+  try {
+    // สร้างและเรียกใช้ LoginUserUseCase
+    const loginUserUseCase = new LoginUserUseCase(userRepository);
+    const { token } = await loginUserUseCase.execute(email, password);
+    if(!token) {
+      res.status(401).json({ success: false, message: "Invalid credentials" });
+        return;
+    }
+    res.cookie("access_token", token, {
+      httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
+      secure: process.env.NODE_ENV === "production", // ใช้ secure cookie ใน production
+      sameSite: "strict", // ป้องกัน CSRF
+      maxAge: 3600000, // กำหนดอายุของ cookie เป็น 1 ชั่วโมง
+    });
+    
+    // ส่ง Token กลับไป
+    res.status(200).json({ success: true, token });
+  } catch (error: any) {
+    // จัดการ Error ที่อาจจะถูกโยนมาจาก Use Case (เช่น อีเมลไม่ถูกต้องหรือรหัสผ่านไม่ถูกต้อง)
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
