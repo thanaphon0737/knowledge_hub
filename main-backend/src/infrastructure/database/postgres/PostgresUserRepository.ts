@@ -24,6 +24,25 @@ export class PostgresUserRepository implements IUserRepository {
             throw new Error('Database error while finding user by email');
         }
     }
+    /**
+     * ค้นหาผู้ใช้ด้วย ID
+     * @param id - ID ของผู้ใช้ที่ต้องการค้นหา
+     * @returns ข้อมูล User ถ้าเจอ, หรือ null ถ้าไม่เจอ
+     */
+    async findById(id: string): Promise<User | null> {
+        const query = 'SELECT * FROM users WHERE id = $1';
+        try {
+            const result = await pool.query(query, [id]);
+            if (result.rows.length === 0) {
+                return null; // ไม่พบผู้ใช้
+            }
+            // คืนค่าข้อมูลผู้ใช้แถวแรกที่เจอ
+            return result.rows[0];
+        } catch (error) {
+            console.error('Error finding user by ID:', error);
+            throw new Error('Database error while finding user by ID');
+        }
+    }
 
     /**
      * บันทึกข้อมูลผู้ใช้ใหม่ลงในฐานข้อมูล
