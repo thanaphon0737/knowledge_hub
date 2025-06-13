@@ -24,8 +24,12 @@ export class LoginUserUseCase {
 
     // 3. ตรวจสอบรหัสผ่าน
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is not defined in .env file");
+    }
     if (!isPasswordValid) {
-      throw new Error("Invalid password");
+      throw new Error("Invalid email or password");
     }
     const token = jwt.sign(
       { userId: user.id, email: user.email },
@@ -34,7 +38,6 @@ export class LoginUserUseCase {
     );
 
     user.token = token;
-
 
     // 4. ส่งข้อมูลผู้ใช้ที่เข้าสู่ระบบสำเร็จ
     return user;
