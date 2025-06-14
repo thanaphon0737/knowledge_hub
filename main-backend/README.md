@@ -37,22 +37,22 @@
             - [x] DeleteDocument
         -[ ] implement repository
             - [x] CreateDocument
-            - [ ] GetDocumentByUser
+            - [x] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement usecase
             - [x] CreateDocument
-            - [ ] GetDocumentByUser
+            - [x] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement controller
             - [x] CreateDocument
-            - [ ] GetDocumentByUser
+            - [x] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement routes
             - [x] CreateDocument
-            - [ ] GetDocumentByUser
+            - [x] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
