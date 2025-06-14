@@ -14,6 +14,10 @@ export class CreateDocumentUseCase {
     description: string
   ): Promise<Document> {
     // 1. Input Validation
+
+    if(!name){
+        throw new Error("Document name cannot be empty");
+    }
     if (!userId || !name) {
       throw new Error("User ID and name are required");
     }
