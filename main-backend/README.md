@@ -22,9 +22,11 @@
     - [x] api return list of all table for debuging
 - [ ] Design RESTful API endpoints
     - [ ] Define clear resource naming conventions
-        -[ ] create domain entities
-            -[ ] documents
-            -[ ] files
+        -[x] create domain entities
+            -[x] documents
+            -[x] files
+            -[x] chat_message
+            -[x] chat_session
         -[ ] create repository interface (port)
             - [ ] IDocumentRepository
             - [ ] IFileRepository
