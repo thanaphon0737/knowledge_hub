@@ -30,11 +30,11 @@
         -[x] create repository interface (port)
             - [x] IDocumentRepository
             - [ ] IFileRepository
-        -[ ] create Usecase files
-            - [ ] CreateDocument
-            - [ ] GetDocumentByUser
-            - [ ] UpdateDocument
-            - [ ] DeleteDocument
+        -[x] create Usecase files
+            - [x] CreateDocument
+            - [x] GetDocumentByUser
+            - [x] UpdateDocument
+            - [x] DeleteDocument
         -[ ] implement repository
             - [ ] CreateDocument
             - [ ] GetDocumentByUser
