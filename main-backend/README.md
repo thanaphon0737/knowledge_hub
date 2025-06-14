@@ -22,6 +22,33 @@
     - [x] api return list of all table for debuging
 - [ ] Design RESTful API endpoints
     - [ ] Define clear resource naming conventions
+        -[ ] create domain entities
+            -[ ] documents
+            -[ ] files
+        -[ ] create repository interface (port)
+            - [ ] IDocumentRepository
+            - [ ] IFileRepository
+        -[ ] create Usecase files
+            - [ ] CreateDocument
+            - [ ] GetDocumentByUser
+            - [ ] UpdateDocument
+            - [ ] DeleteDocument
+        -[ ] implement repository
+            - [ ] CreateDocument
+            - [ ] GetDocumentByUser
+            - [ ] UpdateDocument
+            - [ ] DeleteDocument
+        -[ ] implement usecase
+            - [ ] CreateDocument
+            - [ ] GetDocumentByUser
+            - [ ] UpdateDocument
+            - [ ] DeleteDocument
+        -[ ] implement controller
+            - [ ] CreateDocument
+            - [ ] GetDocumentByUser
+            - [ ] UpdateDocument
+            - [ ] DeleteDocument
+
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [ ] Implement input validation and error handling
