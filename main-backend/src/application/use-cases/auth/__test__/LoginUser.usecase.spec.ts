@@ -52,7 +52,7 @@ describe('LoginUserUseCase', () => {
     // bcrypt.compare จะคืนค่า true ตามที่ mock ไว้ด้านบน
 
     // Act: เรียกใช้งานฟังก์ชันที่ต้องการทดสอบ
-    const {token} = await loginUseCase.execute('test@example.com', 'correct_password');
+    const token = await loginUseCase.execute('test@example.com', 'correct_password');
 
     // Assert: ตรวจสอบผลลัพธ์
     expect(token).toBe('a_valid_jwt_token'); // Token ที่ได้ต้องตรงกับที่ mock ไว้
