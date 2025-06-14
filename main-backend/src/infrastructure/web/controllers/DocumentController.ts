@@ -1,6 +1,8 @@
 import { RequestHandler } from "express";
 import { PostgresDocumentRepository } from "../../database/postgres/PostgresDocumentRepository";
 import { CreateDocumentUseCase } from "../../../application/use-cases/documents/CreateDocument.usecase";
+import { GetDocumentByIdUseCase } from "../../../application/use-cases/documents/GetDocumentById.usecase";
+import { GetDocuments } from "../../../application/use-cases/documents/GetDocuments.usecase";
 import { DocumentResponseDto } from "../../../application/dtos/document.dto";
 
 // -- สร้าง Instance ของ Repository --
@@ -41,11 +43,8 @@ export const createDocument: RequestHandler = async (req, res) => {
   }
 };
 
-export const getDocument: RequestHandler = async (req, res) => {
-  console.log("getDocument");
+export const getDocumentById: RequestHandler = async (req, res) => {
   const documentId = req.params.id;
-  console.log("documentId", documentId);
-  console.log("req.user", req.user);
   const userId = req.user?.id; //
   if (!userId) {
     res.status(400).json({ success: false, message: "User ID is required" });
@@ -53,38 +52,41 @@ export const getDocument: RequestHandler = async (req, res) => {
   }
 
   if (!documentId) {
-    res.status(400).json({ success: false, message: "Document ID is required" });
+    res
+      .status(400)
+      .json({ success: false, message: "Document ID is required" });
     return;
   }
   try {
-      const document = await documentRepository.findByIdAndUserId(
-        documentId,
-        userId
-      );
-      if (!document) {
-        res.status(404).json({ success: false, message: "Document not found" });
-        return;
-      }
-
-      // แปลงข้อมูล Document เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
-      const documentResponse: DocumentResponseDto = {
-        id: document.id,
-        user_id: document.user_id,
-        name: document.name,
-        description: document.description,
-        created_at: document.created_at,
-        updated_at: document.updated_at,
-      };
-      res.status(200).json({ success: true, data: documentResponse });
-    } catch (error: any) {
-      res
-        .status(400)
-        .json({ success: false, message: "Document ID is required" });
+    // สร้างและเรียกใช้ GetDocumentByIdUseCase
+    const getDocumentByIdUseCase = new GetDocumentByIdUseCase(
+      documentRepository
+    );
+    const document = await getDocumentByIdUseCase.execute(userId, documentId);
+    if (!document) {
+      res.status(404).json({ success: false, message: "Document not found" });
       return;
     }
+
+    // แปลงข้อมูล Document เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
+    const documentResponse: DocumentResponseDto = {
+      id: document.id,
+      user_id: document.user_id,
+      name: document.name,
+      description: document.description,
+      created_at: document.created_at,
+      updated_at: document.updated_at,
+    };
+    res.status(200).json({ success: true, data: documentResponse });
+  } catch (error: any) {
+    res
+      .status(400)
+      .json({ success: false, message: "Document ID is required" });
+    return;
+  }
 };
 
-export const listDocuments: RequestHandler = async (req, res) => {
+export const getDocuments: RequestHandler = async (req, res) => {
   const userId = req.user?.id; //
   if (!userId) {
     res.status(400).json({ success: false, message: "User ID is required" });
@@ -92,7 +94,8 @@ export const listDocuments: RequestHandler = async (req, res) => {
   }
   try {
     // เรียกใช้ Use Case เพื่อดึงข้อมูล Document
-    const documents = await documentRepository.findAllByUserId(userId);
+    const getDocumentsUseCase = new GetDocuments(documentRepository);
+    const documents = await getDocumentsUseCase.execute(userId);
     if (!documents || documents.length === 0) {
       res.status(404).json({ success: false, message: "No documents found" });
       return;
