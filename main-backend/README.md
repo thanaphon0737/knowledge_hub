@@ -27,8 +27,8 @@
             -[x] files
             -[x] chat_message
             -[x] chat_session
-        -[ ] create repository interface (port)
-            - [ ] IDocumentRepository
+        -[x] create repository interface (port)
+            - [x] IDocumentRepository
             - [ ] IFileRepository
         -[ ] create Usecase files
             - [ ] CreateDocument
