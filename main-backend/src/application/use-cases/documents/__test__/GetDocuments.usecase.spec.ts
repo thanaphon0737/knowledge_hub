@@ -1,51 +1,58 @@
-import { GetDocuments } from '../GetDocuments.usecase';
+import { GetDocumentByIdUseCase } from '../GetDocumentById.usecase';
+
 import { IDocumentRepository } from '../../../repositories/IDocumentRepository';
 import { Document } from '../../../../domain/entities/document.entity';
 
-describe('GetDocuments UseCase', () => {
+describe('GetDocumentByIdUseCase', () => {
   let mockDocumentRepository: jest.Mocked<IDocumentRepository>;
-  let getDocumentsUseCase: GetDocuments;
+  let getDocumentByIdUseCase: GetDocumentByIdUseCase;
 
   beforeEach(() => {
     mockDocumentRepository = {
-      create: jest.fn(),
-      update: jest.fn(),
-      findByIdAndUserId: jest.fn(),
-      findAllByUserId: jest.fn(),
-      deleteByIdAndUserId: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        findByIdAndUserId: jest.fn(),
+        findAllByUserId: jest.fn(),
+        deleteByIdAndUserId: jest.fn(),
     };
-    getDocumentsUseCase = new GetDocuments(mockDocumentRepository);
+    getDocumentByIdUseCase = new GetDocumentByIdUseCase(mockDocumentRepository);
   });
 
-  // Test Case 1: Happy Path - User has documents
-  it('should return an array of documents when documents are found for the user', async () => {
-    // Arrange: Simulate the repository returning a list of documents.
-    const fakeDocuments: Document[] = [
-      { id: 'doc-1', name: 'Doc 1', user_id: 'user-with-docs' } as Document,
-      { id: 'doc-2', name: 'Doc 2', user_id: 'user-with-docs' } as Document,
-    ];
-    mockDocumentRepository.findAllByUserId.mockResolvedValue(fakeDocuments);
+  // Test Case 1: Happy Path - Document found and user is the owner
+  it('should return the document if it exists and belongs to the user', async () => {
+    // Arrange: Simulate the repository finding the correct document.
+    const fakeDocument: Document = {
+      id: 'doc-abc-123',
+      name: 'My Secret Document',
+      user_id: 'user-xyz-789',
+    } as Document;
+    mockDocumentRepository.findByIdAndUserId.mockResolvedValue(fakeDocument);
+
+    const input = { documentId: 'doc-abc-123', userId: 'user-xyz-789' };
 
     // Act
-    const result = await getDocumentsUseCase.execute('user-with-docs');
+    const result = await getDocumentByIdUseCase.execute(input.userId, input.documentId);
 
     // Assert
-    expect(result).toHaveLength(2);
-    // Use non-null assertion `!` because we expect a result in this case.
-    expect(result![0].name).toBe('Doc 1');
-    expect(mockDocumentRepository.findAllByUserId).toHaveBeenCalledWith('user-with-docs');
+    expect(result).toBeDefined();
+    // Use non-null assertion `!` as we expect a result here.
+    expect(result!.id).toBe('doc-abc-123');
+    expect(result!.name).toBe('My Secret Document');
+    expect(mockDocumentRepository.findByIdAndUserId).toHaveBeenCalledWith(input.documentId, input.userId);
   });
 
-  // Test Case 2: Failure Path - User has no documents, should throw error as per the provided logic.
-  it('should throw an error if no documents are found for the user', async () => {
-    // Arrange: Simulate the repository returning an empty array.
-    mockDocumentRepository.findAllByUserId.mockResolvedValue([]);
+  // Test Case 2: Failure Path - Document not found or does not belong to the user
+  it('should throw an error if the document is not found or does not belong to the user', async () => {
+    // Arrange: Simulate the repository not finding any document for that user/id combination.
+    mockDocumentRepository.findByIdAndUserId.mockResolvedValue(null);
+    
+    const input = { documentId: 'doc-of-someone-else', userId: 'user-xyz-789' };
 
-    // Act & Assert: We expect the execution to fail and throw a specific error.
+    // Act & Assert
     await expect(
-        getDocumentsUseCase.execute('user-without-docs')
-    ).rejects.toThrow('Document not found for the user');
-
-    expect(mockDocumentRepository.findAllByUserId).toHaveBeenCalledWith('user-without-docs');
+      getDocumentByIdUseCase.execute(input.userId, input.documentId)
+    ).rejects.toThrow('Document not found or user does not have permission');
+    
+    expect(mockDocumentRepository.findByIdAndUserId).toHaveBeenCalledWith(input.documentId, input.userId);
   });
 });
