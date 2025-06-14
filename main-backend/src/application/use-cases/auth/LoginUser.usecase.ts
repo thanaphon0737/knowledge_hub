@@ -10,7 +10,7 @@ export class LoginUserUseCase {
     this.userRepository = userRepository;
   }
 
-  async execute(email: string, password: string): Promise<User> {
+  async execute(email: string, password: string): Promise<String> {
     // 1. Input Validation
     if (!email || !password) {
       throw new Error("Email and password are required");
@@ -37,9 +37,8 @@ export class LoginUserUseCase {
       { expiresIn: "1h" } // กำหนดเวลาในการหมดอายุของ Token   )
     );
 
-    user.token = token;
-
-    // 4. ส่งข้อมูลผู้ใช้ที่เข้าสู่ระบบสำเร็จ
-    return user;
+    
+    
+    return token;
   }
 }
