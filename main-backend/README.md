@@ -36,21 +36,25 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
         -[ ] implement repository
-            - [ ] CreateDocument
+            - [x] CreateDocument
             - [ ] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement usecase
-            - [ ] CreateDocument
+            - [x] CreateDocument
             - [ ] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement controller
-            - [ ] CreateDocument
+            - [x] CreateDocument
             - [ ] GetDocumentByUser
             - [ ] UpdateDocument
             - [ ] DeleteDocument
-
+        -[ ] implement routes
+            - [x] CreateDocument
+            - [ ] GetDocumentByUser
+            - [ ] UpdateDocument
+            - [ ] DeleteDocument
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [ ] Implement input validation and error handling
