@@ -91,25 +91,4 @@ describe('CreateDocumentUseCase', () => {
 
 });
 
-/*
-  *** Important Note ***
-  For these tests to pass, you must add validation logic
-  to your CreateDocument.usecase.ts file like this:
 
-  // src/application/use-cases/documents/CreateDocument.usecase.ts
-  async execute(input: { name: string; description?: string; userId: string; }): Promise<Document> {
-    // 1. Input Validation
-    if (!input.name || input.name.trim() === '') {
-      throw new Error('Document name cannot be empty');
-    }
-
-    // 2. Business Logic (the rest of your code)
-    const newDocumentData = {
-      name: input.name,
-      description: input.description,
-      user_id: input.userId,
-    };
-    
-    return this.documentRepository.create(newDocumentData);
-  }
-*/

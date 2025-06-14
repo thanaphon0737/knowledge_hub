@@ -41,4 +41,74 @@ export const createDocument: RequestHandler = async (req, res) => {
   }
 };
 
+export const getDocument: RequestHandler = async (req, res) => {
+  console.log("getDocument");
+  const documentId = req.params.id;
+  console.log("documentId", documentId);
+  console.log("req.user", req.user);
+  const userId = req.user?.id; //
+  if (!userId) {
+    res.status(400).json({ success: false, message: "User ID is required" });
+    return;
+  }
 
+  if (!documentId) {
+    res.status(400).json({ success: false, message: "Document ID is required" });
+    return;
+  }
+  try {
+      const document = await documentRepository.findByIdAndUserId(
+        documentId,
+        userId
+      );
+      if (!document) {
+        res.status(404).json({ success: false, message: "Document not found" });
+        return;
+      }
+
+      // แปลงข้อมูล Document เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
+      const documentResponse: DocumentResponseDto = {
+        id: document.id,
+        user_id: document.user_id,
+        name: document.name,
+        description: document.description,
+        created_at: document.created_at,
+        updated_at: document.updated_at,
+      };
+      res.status(200).json({ success: true, data: documentResponse });
+    } catch (error: any) {
+      res
+        .status(400)
+        .json({ success: false, message: "Document ID is required" });
+      return;
+    }
+};
+
+export const listDocuments: RequestHandler = async (req, res) => {
+  const userId = req.user?.id; //
+  if (!userId) {
+    res.status(400).json({ success: false, message: "User ID is required" });
+    return;
+  }
+  try {
+    // เรียกใช้ Use Case เพื่อดึงข้อมูล Document
+    const documents = await documentRepository.findAllByUserId(userId);
+    if (!documents || documents.length === 0) {
+      res.status(404).json({ success: false, message: "No documents found" });
+      return;
+    }
+    // แปลงข้อมูล Document เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
+    const documentsResponse: DocumentResponseDto[] = documents.map((doc) => ({
+      id: doc.id,
+      user_id: doc.user_id,
+      name: doc.name,
+      description: doc.description,
+      created_at: doc.created_at,
+      updated_at: doc.updated_at,
+    }));
+    res.status(200).json({ success: true, data: documentsResponse });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+    return;
+  }
+};

@@ -19,12 +19,31 @@ export class PostgresDocumentRepository implements IDocumentRepository {
                 throw new Error('Database error while creating document');
             });
     }
-    findByIdAndUserId(id: string): Promise<Document | null> {
-        throw new Error("Method not implemented.");
+    findByIdAndUserId(id: string,userId: string): Promise<Document | null> {
+        const query = 'SELECT * FROM documents WHERE id = $1 and user_id = $2';
+        const values = [id, userId];
+        return pool.query(query, values)
+            .then(result => {
+                if (result.rows.length === 0) {
+                    return null; // Document not found
+                }
+                return result.rows[0]; // Return the found document
+            })
+            .catch(error => {
+                console.error('Error finding document by ID and user ID:', error);
+                throw new Error('Database error while finding document');
+            });
     }
 
     findAllByUserId(user_id: string): Promise<Document[]> {
-        throw new Error("Method not implemented.");
+        const query = 'SELECT * FROM documents WHERE user_id = $1';
+        const values = [user_id];
+        return pool.query(query, values)
+            .then(result => result.rows) // Return all documents found
+            .catch(error => {
+                console.error('Error finding documents by user ID:', error);
+                throw new Error('Database error while finding documents');
+            });
     }
 
     update(document: Document): Promise<Document> {
