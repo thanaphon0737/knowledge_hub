@@ -12,7 +12,9 @@ export class GetDocumentByIdUseCase {
 
     // Fetch the document by ID and user ID
     const document = await this.documentRepository.findByIdAndUserId(documentId, userId);
-    
+    if(!document) {
+      throw new Error("Document not found or user does not have permission");
+    }
     // Return the found document or null if not found
     return document;
   }
