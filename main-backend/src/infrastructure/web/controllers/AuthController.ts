@@ -49,7 +49,7 @@ export const login: RequestHandler = async (req, res) => {
   try {
     // สร้างและเรียกใช้ LoginUserUseCase
     const loginUserUseCase = new LoginUserUseCase(userRepository);
-    const { token } = await loginUserUseCase.execute(email, password);
+    const  token  = await loginUserUseCase.execute(email, password);
     if(!token) {
       res.status(401).json({ success: false, message: "Invalid credentials" });
         return;
