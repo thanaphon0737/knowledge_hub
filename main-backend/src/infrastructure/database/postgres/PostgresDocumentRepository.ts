@@ -47,7 +47,22 @@ export class PostgresDocumentRepository implements IDocumentRepository {
     }
 
     update(document: Document): Promise<Document> {
-        throw new Error("Method not implemented.");
+        const query = `
+            UPDATE documents
+            SET name = $1, description = $2, updated_at = NOW()
+            WHERE id = $3 AND user_id = $4`
+        const values = [document.name, document.description, document.id, document.user_id];
+        return pool.query(query, values)
+            .then(result => {
+                if (result.rowCount === 0) {
+                    throw new Error('Document not found or user does not have permission');
+                }
+                return document; // Return the updated document
+            })
+            .catch(error => {
+                console.error('Error updating document:', error);
+                throw new Error('Database error while updating document');
+            });
     }
 
     deleteByIdAndUserId(id: string): Promise<void> {
