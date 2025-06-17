@@ -38,12 +38,12 @@
         -[ ] implement repository
             - [x] CreateDocument
             - [x] GetDocumentByUser
-            - [ ] UpdateDocument
+            - [x] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement usecase
             - [x] CreateDocument
             - [x] GetDocumentByUser
-            - [ ] UpdateDocument
+            - [x] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement controller
             - [x] CreateDocument
