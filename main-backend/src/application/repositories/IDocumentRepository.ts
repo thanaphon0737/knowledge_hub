@@ -13,7 +13,7 @@ export interface IDocumentRepository {
      *  @param document - Document entity to be updated
      *  @returns Promise<Document> - The updated document entity
      */
-    update(document: Partial<Document> & {id: string,user_id: string }): Promise<Document | null>; // Document with id, but partial for other fields
+    update(document: Partial<Document> & {id: string;user_id: string }): Promise<Document | null>; // Document with id, but partial for other fields
 
     /**
      * find document by id and user id
@@ -26,6 +26,7 @@ export interface IDocumentRepository {
     /**
      * find all documents by user id
      * @param userId - User id to find documents for
+     * @param id - Document id
      *  @returns Promise<Document[]> - Array of documents owned by the user
      */
     findAllByUserId(userId: string): Promise<Document[]>;
@@ -37,4 +38,10 @@ export interface IDocumentRepository {
      *  @returns Promise<void> - Resolves when the document is deleted
      */
     deleteByIdAndUserId(id: string, userId: string): Promise<void>;
+    /**
+     * delete document by id and user id
+     *  @param userId - User id to delete documents for
+     *  @param id  - Document id
+     *  @returns Promise<void> - Resolves when all documents are deleted
+     */
 }
