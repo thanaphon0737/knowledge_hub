@@ -4,7 +4,7 @@ import { CreateDocumentUseCase } from "../../../application/use-cases/documents/
 import { GetDocumentByIdUseCase } from "../../../application/use-cases/documents/GetDocumentById.usecase";
 import { GetDocuments } from "../../../application/use-cases/documents/GetDocuments.usecase";
 import { DocumentResponseDto } from "../../../application/dtos/document.dto";
-
+import { UpdateDocumentUseCase } from "../../../application/use-cases/documents/UpdateDocument.usecase";
 // -- สร้าง Instance ของ Repository --
 const documentRepository = new PostgresDocumentRepository();
 export const createDocument: RequestHandler = async (req, res) => {
@@ -115,3 +115,43 @@ export const getDocuments: RequestHandler = async (req, res) => {
     return;
   }
 };
+
+export const updateDocument: RequestHandler = async (req, res) => {
+  const userId = req.user?.id; // สมมติว่า req.user ถูกตั้งค่าโดย middleware ที่ตรวจสอบ JWT
+  const documentId = req.params.id;
+  const { name, description } = req.body;
+
+  if (!userId || !documentId) {
+    res.status(400).json({ success: false, message: "User ID and Document ID are required" });
+    return;
+  }
+
+  try {
+    // สร้างและเรียกใช้ UpdateDocumentUseCase
+    const updateDocumentUseCase = new UpdateDocumentUseCase(documentRepository);
+    const updatedDocument = await updateDocumentUseCase.execute({
+      id: documentId,
+      user_id: userId,
+      name,
+      description,
+    });
+
+    if (!updatedDocument) {
+      res.status(404).json({ success: false, message: "Document not found or user does not have permission" });
+      return;
+    }
+
+    // แปลงข้อมูล Document เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
+    const documentResponse: DocumentResponseDto = {
+      id: updatedDocument.id,
+      user_id: updatedDocument.user_id,
+      name: updatedDocument.name,
+      description: updatedDocument.description,
+      created_at: updatedDocument.created_at,
+      updated_at: updatedDocument.updated_at,
+    };
+    res.status(200).json({ success: true, data: documentResponse });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}

@@ -48,7 +48,7 @@
         -[ ] implement controller
             - [x] CreateDocument
             - [x] GetDocumentByUser
-            - [ ] UpdateDocument
+            - [x] UpdateDocument
             - [ ] DeleteDocument
         -[ ] implement routes
             - [x] CreateDocument
