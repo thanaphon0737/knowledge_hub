@@ -53,7 +53,7 @@
         -[ ] implement routes
             - [x] CreateDocument
             - [x] GetDocumentByUser
-            - [ ] UpdateDocument
+            - [x] UpdateDocument
             - [ ] DeleteDocument
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
