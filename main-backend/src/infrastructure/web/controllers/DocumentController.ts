@@ -5,6 +5,7 @@ import { GetDocumentByIdUseCase } from "../../../application/use-cases/documents
 import { GetDocuments } from "../../../application/use-cases/documents/GetDocuments.usecase";
 import { DocumentResponseDto } from "../../../application/dtos/document.dto";
 import { UpdateDocumentUseCase } from "../../../application/use-cases/documents/UpdateDocument.usecase";
+import { DeleteDocumentByIdUseCase } from "../../../application/use-cases/documents/DeleteDocument.usecase";
 // -- สร้าง Instance ของ Repository --
 const documentRepository = new PostgresDocumentRepository();
 export const createDocument: RequestHandler = async (req, res) => {
@@ -155,3 +156,22 @@ export const updateDocument: RequestHandler = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 }
+
+export const deleteDocument: RequestHandler = async (req, res) => {
+  const userId = req.user?.id; // สมมติว่า req.user ถูกตั้งค่าโดย middleware ที่ตรวจสอบ JWT
+  const documentId = req.params.id;
+
+  if (!userId || !documentId) {
+    res.status(400).json({ success: false, message: "User ID and Document ID are required" });
+    return;
+  }
+
+  try {
+    // สร้างและเรียกใช้ DeleteDocumentByIdUseCase
+    const deleteDocumentUseCase = new DeleteDocumentByIdUseCase(documentRepository);
+    await deleteDocumentUseCase.execute(documentId, userId);
+    res.status(204).send(); // ส่งสถานะ 204 No Content เมื่อสำเร็จ
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
