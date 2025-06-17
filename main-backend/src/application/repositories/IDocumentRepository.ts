@@ -13,7 +13,7 @@ export interface IDocumentRepository {
      *  @param document - Document entity to be updated
      *  @returns Promise<Document> - The updated document entity
      */
-    update(document: Partial<Document> & {id: string }): Promise<Document | null>; // Document with id, but partial for other fields
+    update(document: Partial<Document> & {id: string,user_id: string }): Promise<Document | null>; // Document with id, but partial for other fields
 
     /**
      * find document by id and user id
