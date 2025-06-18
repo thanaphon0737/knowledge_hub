@@ -3,12 +3,12 @@
 ### project setup
     - [x] create .venv command for activate : source .venv/Scripts/activate
     - [x] install dependencie
-    - [ ] create project structure
+    - [x] create project structure
 ### API endpoint
-    - [ ] create main.py
+    - [x] create main.py
     - [x] create Dockerfile
     - [ ] docker-compose
-    - [ ] test connection 
+    - [x] test connection 
 ### Core logic
     - [ ] create module for Document loader
     - [ ] create module for Textsplitter/Chunking
