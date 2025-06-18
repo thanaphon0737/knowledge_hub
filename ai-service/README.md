@@ -1,12 +1,12 @@
 # AI-service for RAG
 ## to do list
 ### project setup
-    - [ ] create .venv
-    - [ ] install dependencie
+    - [x] create .venv command for activate : source .venv/Scripts/activate
+    - [x] install dependencie
     - [ ] create project structure
 ### API endpoint
     - [ ] create main.py
-    - [ ] create Dockerfile
+    - [x] create Dockerfile
     - [ ] docker-compose
     - [ ] test connection 
 ### Core logic
