@@ -5,3 +5,4 @@ __pycache__/
 *.py[cod]
 # Distribution / packaging
 .Python
+chroma_langchain_db/
