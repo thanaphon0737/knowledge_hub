@@ -6,3 +6,4 @@ __pycache__/
 # Distribution / packaging
 .Python
 chroma_langchain_db/
+chroma_test_db/
