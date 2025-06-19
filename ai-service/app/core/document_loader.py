@@ -1,7 +1,7 @@
 import os
 from langchain.document_loaders import PyPDFLoader, WebBaseLoader
 
-def load_document(file_path: str):
+def load_document(file_type:str,file_path: str):
     """
     Load a PDF file and return its text content.
 
@@ -11,10 +11,8 @@ def load_document(file_path: str):
     Returns:
         str: The text content of the PDF file.
     """
-
-    _,file_extension = os.path.splitext(file_path)
     text_content = ""
-    if file_extension.lower() == '.pdf':
+    if file_type == 'pdf':
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"The file {file_path} does not exist.")
         try:
