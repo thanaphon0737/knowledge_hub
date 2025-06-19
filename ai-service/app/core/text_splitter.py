@@ -2,7 +2,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List
 from langchain_core.documents import Document
 
-from document_loader import load_from_source
+from app.core.document_loader import load_from_source
 
 class TextSplitterService:
     

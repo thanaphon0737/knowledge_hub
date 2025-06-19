@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
-
+class HealthCheckResponse(BaseModel):
+    status: str = Field(..., description="Health status of the service")
+    message: Optional[str] = Field(None, description="Optional message providing additional information about the health status")
 class ProcessRequest(BaseModel):
     
     file_id: str = Field(..., description="Unique identifier for the file to be processed")
@@ -23,8 +25,8 @@ class QueryRequest(BaseModel):
     """Model for query requests."""
     user_id: Optional[str] = Field(None, description="Optional user identifier for tracking purposes")
     question: str = Field(..., description="The question to be answered")
-    document_ids: List[str] = Field(..., description="List of document IDs to search in")
+
     
 class QueryResponse(BaseModel):
-    ans: str
-    sources: List[SourceDocument] = Field(..., description="List of source documents related to the answer")
+    ans: str = Field(..., description="The answer to the query")
+    sources: List[str] = Field(..., description="List of sources used to generate the answer")
