@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
         text_splitter_service = TextSplitterService(chunk_size=1000, chunk_overlap=200)
         vector_store_service = VectorStoreService(
             embedding_function=embeddings,
-            persist_directory="./vector_store_db",
+            persist_directory=os.getenv("CHROMA_DB_PATH", "./vector_store_db"),
             collection_name="documents",
         )
     except Exception as e:
