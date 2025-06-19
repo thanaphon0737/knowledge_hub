@@ -40,7 +40,7 @@ class VectorStoreService:
             print(f"Error searching vector store: {e}")
             return []
 
-    def as_retriever(self, search_kwargs: Dict[str, Any] = None) -> Any:
+    def get_retriever(self, search_kwargs: Dict[str, Any] = None) -> Any:
         """
         Returns a retriever for the vector store.
 

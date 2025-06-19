@@ -22,7 +22,7 @@ def load_document(file_type:str,file_path: str):
             #     text_content += page.extract_text() or ""
         except Exception as e:
             raise RuntimeError(f"Failed to read PDF file {file_path}: {e}")
-    elif file_path.startswith("http://") or file_path.startswith("https://"):
+    elif file_type == 'url':
         try:
             loader = WebBaseLoader(file_path)
             text_content = loader.load()

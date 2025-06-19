@@ -3,7 +3,7 @@ from text_splitter import split_text
 from embedding_service import embeddings # สมมติว่าสร้างเป็น instance แล้ว
 from vector_store import VectorStoreService # สมมติว่าสร้างเป็น instance แล้ว
 from langchain.schema import Document
-
+from langchain_google_genai import ChatGoogleGenerativeAI
 def peek_database(vector_store_service: VectorStoreService, limit: int = 5) -> list[Document]:
     """
     Retrieves a limited number of documents from the vector store for inspection.
@@ -81,9 +81,9 @@ async def process_document_pipeline(file_id: str, user_id: str, source_type: str
     # ... (Logic การสร้าง IDs และ Metadatas) ...
     ids, metadatas, documents_contents = prepare_for_vector_store(chunks, file_id, user_id)
     
-    for doc in documents_contents:
-        print(f"Document content: {doc[:50]}...")
-    print(f"Number of documents prepared for vector store: {len(documents_contents)}")
+    # for doc in documents_contents:
+    #     print(f"Document content: {doc[:50]}...")
+    # print(f"Number of documents prepared for vector store: {len(documents_contents)}")
     
     # 4. สร้าง Embeddings
     # ... (Logic การเรียก embedding_service) ...
@@ -102,28 +102,64 @@ async def process_document_pipeline(file_id: str, user_id: str, source_type: str
     
     print(f"Pipeline finished for file_id: {file_id}")
 
+def build_prompt(question: str, retrieved_docs: list[Document]) -> str:
+        """
+        Builds a comprehensive prompt for the LLM by combining a template
+        with the retrieved context and the user's question.
+        """
+        # Extracts the text content from the retrieved chunks.
+        # print(retrieved_docs.keys())
+        context = "\n\n---\n\n".join([chunk.page_content for chunk in retrieved_docs])
 
+        # A good prompt template is key to getting good answers.
+        prompt_template = f"""
+        You are a helpful assistant. Answer the following question based ONLY on the context provided below.
+        If the context does not contain the answer, say "I cannot find the answer in the provided documents."
+
+        Context:
+        {context}
+
+        Question:
+        {question}
+
+        Answer:
+        """
+        print(f'Prompt Template:\n{prompt_template}')
+        return prompt_template.strip()
 async def get_rag_answer(user_id: str, question: str, document_ids: list | None):
     # ... (Logic ของ RAG ทั้งหมดจะอยู่ที่นี่) ...
     print("RAG pipeline started...")
     
-    # 1. Embed a question
-    # 2. Query Vector Store
-    # 3. Build a prompt
-    # 4. Call LLM
     
-    return "This is the final answer from RAG.", [] # คืนค่าคำตอบและ sources
+    # 1. Embed a question
+    
+    # 2. Query Vector Store
+    # use retriver from VectorStoreService
+    vector_store_service = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
+    retriever = vector_store_service.get_retriever(search_kwargs={'k': 3})
+    retrieve_docs = retriever.invoke(question)
+    
+    
+    # 3. Build a prompt
+    prompt = build_prompt(question, retrieve_docs)
+    # 4. Call LLM
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
+    generated_answer = llm.invoke(prompt) 
+    
+    return generated_answer, [] # คืนค่าคำตอบและ sources
 
 if __name__ == "__main__":
     # ตัวอย่างการเรียกใช้ pipeline
     import asyncio
     # asyncio.run(process_document_pipeline("report-001", "user-1", "pdf", "./dummy_docs/report-001.pdf"))
-    formatted_docs = peek_database(vector_store_service=VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db"), limit=5)
-    for doc in formatted_docs:
-        print(f"Document ID: {doc}\n Content: {doc['page_content'][:20]}...")
+    # asyncio.run(process_document_pipeline("report-002", "user-1", "url", "https://mikelopster.dev/posts/auth-express"))
+    
+    # formatted_docs = peek_database(vector_store_service=VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db"), limit=5)
+    # for doc in formatted_docs:
+    #     print(f"Document ID: {doc}\n Content: {doc['page_content'][:20]}...")
         
-    v = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
-    print(v._vector_store.get())
+    # v = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
+    # print(v._vector_store.get())
     # ตัวอย่างการเรียกใช้ RAG
-    # answer, sources = asyncio.run(get_rag_answer("user456", "What is the capital of France?", ["doc1", "doc2"]))
-    # print(f"Answer: {answer}, Sources: {sources}")
+    answer, sources = asyncio.run(get_rag_answer("user-1", "วันลงทะเบียนเพื่อบริการของมหาลัยวันที่เท่าไหร่?",None))
+    print(f"Answer: {answer}, Sources: {sources}")
