@@ -1,117 +1,72 @@
-from document_loader import load_document
-from text_splitter import split_text
-from embedding_service import embeddings # สมมติว่าสร้างเป็น instance แล้ว
-from vector_store import VectorStoreService # สมมติว่าสร้างเป็น instance แล้ว
-from langchain.schema import Document
+import os
+import asyncio
+from typing import List, Dict, Any, Tuple, Optional
+from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
-def peek_database(vector_store_service: VectorStoreService, limit: int = 5) -> list[Document]:
-    """
-    Retrieves a limited number of documents from the vector store for inspection.
 
-    Args:
-        vector_store_service: An instance of VectorStoreService.
-        limit: The maximum number of documents to retrieve.
+from document_loader import load_from_source
+from text_splitter import TextSplitterService
+from vector_store import VectorStoreService
 
-    Returns:
-        A list of Document objects from the vector store.
-    """
-    try:
-        documents = vector_store_service.peekDatabase(limit=limit)
-        return documents
-    except Exception as e:
-        print(f"Error peeking into the database: {e}")
-        return []
-def prepare_for_vector_store(chunks: list[Document], file_id: str, user_id: str) -> tuple[list[str], list[dict[str, any]], list[str]]:
-    """
-    Prepares lists of IDs, metadatas, and document contents from chunks.
 
-    Args:
-        chunks: A list of LangChain Document objects (the result of a text splitter).
-        file_id: The unique ID of the source file from PostgreSQL.
-        user_id: The unique ID of the user who owns the file.
-
-    Returns:
-        A tuple containing three lists:
-        - A list of unique, meaningful IDs for each chunk.
-        - A list of metadata dictionaries for each chunk.
-        - A list of the text content for each chunk.
-    """
+class ProcessingPipeline:
     
-    ids = []
-    metadatas = []
-    
-    for i, chunk in enumerate(chunks):
-        # --- ID Generation ---
-        # Create a unique and deterministic ID for each chunk.
-        # Format: {file_id}_chunk_{chunk_index}
-        # Example: "f-12345_chunk_0"
+    def __init__(self,text_splitter: TextSplitterService, vector_store_service: VectorStoreService): 
+        self.text_splitter = text_splitter
+        self.vector_store_service = vector_store_service
+        print(f"ProcessingPipeline initialized with TextSplitterService and VectorStoreService.")
+
+    def _prepare_documents_for_store(
+        self,
+        chunks: List[Document],
+        file_id: str,
+        user_id: str
+    ) -> Tuple[List[Document], List[str]]:
+        """        Prepares lists of IDs, metadatas, and document contents from chunks.
+        """
+        ids = []
+        for i, chunk in enumerate(chunks):
+            
+            chunk_id = f'{file_id}_chunk_{i}'
+            ids.append(chunk_id)
+            
+            chunk.metadata['file_id'] = file_id
+            chunk.metadata['user_id'] = user_id
+            chunk.metadata['chunk_number'] = i
+            
+        return chunks, ids
+            
+    async def execute(self, file_id: str, user_id: str, source_type: str, source_location: str):
         
-        chunk_id = f"{file_id}_chunk_{i}"
-        ids.append(chunk_id)
+        print(f"Processing pipeline started for file_id: {file_id}")
         
-        # --- Metadata Generation ---
-        # Create a rich metadata object for each chunk.
-        # This is the "bridge" back to our relational database and business logic.
-        chunk_metadata = {
-            "file_id": file_id,
-            "user_id": user_id,
-            "chunk_number": i,
-            # We also preserve the original metadata from the loader (e.g., page number)
-            **chunk.metadata 
-        }
-        metadatas.append(chunk_metadata)
+        loaded_docs = load_from_source(source_type, source_location)
         
-        documents_contents = [chunk.page_content for chunk in chunks]
-    return ids, metadatas, documents_contents
-
-
-async def process_document_pipeline(file_id: str, user_id: str, source_type: str, source_location: str):
-    # 1. โหลดเอกสาร
-    documents = load_document(source_type, source_location)
-    
-    # 2. แบ่งเป็น Chunks
-    chunks = split_text(documents) # สมมติว่ามีฟังก์ชันนี้
-    print(f"Number of chunks created: {len(chunks)}")
-    # print(chunks.keys())
-    print(chunks[0].metadata) # แสดง metadata ของ chunk แรก
-    for i, chunk in enumerate(chunks):
-        print(f"Chunk {i+1}: {chunk.page_content[:50]}...")
+        chunks = self.text_splitter.split_documents(loaded_docs)
         
-    # 3. สร้าง ID และ Metadata
-    # ... (Logic การสร้าง IDs และ Metadatas) ...
-    ids, metadatas, documents_contents = prepare_for_vector_store(chunks, file_id, user_id)
-    
-    # for doc in documents_contents:
-    #     print(f"Document content: {doc[:50]}...")
-    # print(f"Number of documents prepared for vector store: {len(documents_contents)}")
-    
-    # 4. สร้าง Embeddings
-    # ... (Logic การเรียก embedding_service) ...
-    
-    # 5. บันทึกลง Vector Store
-    # ... (Logic การเรียก vector_store_service) ...
-    vector_store_service = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
-    vector_store_service.upsert_documents(
-        documents = documents_contents,
-        ids = ids,
-        metadatas=metadatas
-    )
-    
+        prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id)
         
+        self.vector_store_service.upsert_documents(
+            documents=prepared_docs,
+            ids=doc_ids,
+        )
+        
+        print(f'Processing pipeline finished for file_id: {file_id}')
+        
+        
+class RagPipeline:
     
+    def __init__(self,vector_store: VectorStoreService): 
+        self.vector_store = vector_store
+        print("RagePipeline initialized with VectorStoreService.")
     
-    print(f"Pipeline finished for file_id: {file_id}")
-
-def build_prompt(question: str, retrieved_docs: list[Document]) -> str:
+    def _build_prompt(self, question: str, context_docs: List[Document]) -> str:
         """
         Builds a comprehensive prompt for the LLM by combining a template
         with the retrieved context and the user's question.
         """
-        # Extracts the text content from the retrieved chunks.
-        # print(retrieved_docs.keys())
-        context = "\n\n---\n\n".join([chunk.page_content for chunk in retrieved_docs])
-
-        # A good prompt template is key to getting good answers.
+        context = "\n\n---\n\n".join([doc.page_content for doc in context_docs])
+        
         prompt_template = f"""
         You are a helpful assistant. Answer the following question based ONLY on the context provided below.
         If the context does not contain the answer, say "I cannot find the answer in the provided documents."
@@ -124,42 +79,92 @@ def build_prompt(question: str, retrieved_docs: list[Document]) -> str:
 
         Answer:
         """
-        print(f'Prompt Template:\n{prompt_template}')
         return prompt_template.strip()
-async def get_rag_answer(user_id: str, question: str, document_ids: list | None):
-    # ... (Logic ของ RAG ทั้งหมดจะอยู่ที่นี่) ...
-    print("RAG pipeline started...")
-    
-    
-    # 1. Embed a question
-    
-    # 2. Query Vector Store
-    # use retriver from VectorStoreService
-    vector_store_service = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
-    retriever = vector_store_service.get_retriever(search_kwargs={'k': 3})
-    retrieve_docs = retriever.invoke(question)
-    
-    
-    # 3. Build a prompt
-    prompt = build_prompt(question, retrieve_docs)
-    # 4. Call LLM
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
-    generated_answer = llm.invoke(prompt) 
-    
-    return generated_answer, [] # คืนค่าคำตอบและ sources
+    async def get_answer(self, user_id: str, question: str) -> Dict[str, Any]:
+        
+        
+        retriever = self.vector_store.get_retriever(search_kwargs={'k': 3,"filter": {"user_id": user_id}})
+        
+        retrieved_docs = retriever.invoke(question)
+        
+        if not retrieved_docs:
+            return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
+        
+        prompt = self._build_prompt(question, retrieved_docs)
+        print(f'Prompt Template:\n{prompt}')   
+        
+        llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
+        response = llm.invoke(prompt)
+        generated_answer = response.content
+        
+        sources = [
+            {
+                "page_content": doc.page_content,
+                "metadata": doc.metadata,
+            }
+            for doc in retrieved_docs
+        ] 
+        
+        return {"answer": generated_answer, "sources": sources}
 
 if __name__ == "__main__":
-    # ตัวอย่างการเรียกใช้ pipeline
-    import asyncio
-    # asyncio.run(process_document_pipeline("report-001", "user-1", "pdf", "./dummy_docs/report-001.pdf"))
-    # asyncio.run(process_document_pipeline("report-002", "user-1", "url", "https://mikelopster.dev/posts/auth-express"))
     
-    # formatted_docs = peek_database(vector_store_service=VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db"), limit=5)
-    # for doc in formatted_docs:
-    #     print(f"Document ID: {doc}\n Content: {doc['page_content'][:20]}...")
+    # --- 1. One-time Setup of Services (Dependency Injection) ---
+    print("--- Initializing Core Services ---")
+    # In a real FastAPI app, this setup would happen once at startup in main.py
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    from dotenv import load_dotenv
+    import os
+    import getpass
+    load_dotenv()
+    if not os.getenv("GOOGLE_API_KEY"):
+        os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embedding_service = embeddings
+    text_splitter_service = TextSplitterService(chunk_size=1000, chunk_overlap=200)
+    vector_store_service = VectorStoreService(
+        embedding_function=embedding_service,
+        persist_directory="./vector_store_db"
+    )
+
+    # --- 2. Create Instances of the Pipelines, Injecting Services ---
+    processing_pipeline = ProcessingPipeline(
+        text_splitter=text_splitter_service,
+        vector_store_service=vector_store_service
+    )
+    rag_pipeline = RagPipeline(vector_store=vector_store_service)
+
+    # --- 3. Define an async main function to run the pipelines ---
+    async def main():
+        # --- Example: Run the Processing Pipeline ---
+        # This simulates receiving a request to process a new file.
+        # Make sure you have the dummy file at this path.
+        pdf_path = "./dummy_docs/report-001.pdf"
+        if os.path.exists(pdf_path):
+             await processing_pipeline.execute(
+                 file_id="report-001",
+                 user_id="user-123",
+                 source_type="upload",
+                 source_location=pdf_path
+             )
+        else:
+            print(f"Warning: Test PDF not found at {pdf_path}. Skipping processing pipeline.")
+            # Let's add some data manually for the RAG test to work
+            docs = [Document(page_content="The registration date for new students is October 15th.", metadata={"file_id":"manual-doc"})]
+            vector_store_service.upsert_documents(docs, ids=["manual-doc_chunk_0"])
+
+
+        # --- Example: Run the RAG Pipeline ---
+        # This simulates receiving a query from a user.
+        result = await rag_pipeline.get_answer(
+            user_id="user-123",
+            question="วันลงทะเบียนเพื่อบริการของมหาลัยวันที่เท่าไหร่?" # "What is the university registration date?"
+        )
         
-    # v = VectorStoreService(embedding_function=embeddings, persist_directory="./vector_store_db")
-    # print(v._vector_store.get())
-    # ตัวอย่างการเรียกใช้ RAG
-    answer, sources = asyncio.run(get_rag_answer("user-1", "วันลงทะเบียนเพื่อบริการของมหาลัยวันที่เท่าไหร่?",None))
-    print(f"Answer: {answer}, Sources: {sources}")
+        print("\n--- RAG Final Result ---")
+        import json
+        # Use json.dumps for pretty printing the result
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    # --- 4. Run the async main function ---
+    asyncio.run(main())
