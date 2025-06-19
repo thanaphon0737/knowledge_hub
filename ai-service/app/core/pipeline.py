@@ -4,9 +4,9 @@ from typing import List, Dict, Any, Tuple, Optional
 from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from document_loader import load_from_source
-from text_splitter import TextSplitterService
-from vector_store import VectorStoreService
+from app.core.document_loader import load_from_source
+from app.core.text_splitter import TextSplitterService
+from app.core.vector_store import VectorStoreService
 
 
 class ProcessingPipeline:
@@ -56,8 +56,9 @@ class ProcessingPipeline:
         
 class RagPipeline:
     
-    def __init__(self,vector_store: VectorStoreService): 
+    def __init__(self,vector_store: VectorStoreService,llm: Optional[ChatGoogleGenerativeAI] = None): 
         self.vector_store = vector_store
+        self.llm = llm
         print("RagePipeline initialized with VectorStoreService.")
     
     def _build_prompt(self, question: str, context_docs: List[Document]) -> str:
@@ -93,7 +94,7 @@ class RagPipeline:
         prompt = self._build_prompt(question, retrieved_docs)
         print(f'Prompt Template:\n{prompt}')   
         
-        llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
+        llm = self.llm
         response = llm.invoke(prompt)
         generated_answer = response.content
         
@@ -104,7 +105,8 @@ class RagPipeline:
             }
             for doc in retrieved_docs
         ] 
-        
+        # print(f"Generated Answer: {generated_answer}")
+        # print(f"Sources: {sources}")
         return {"answer": generated_answer, "sources": sources}
 
 if __name__ == "__main__":
