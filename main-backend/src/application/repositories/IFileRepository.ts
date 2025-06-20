@@ -8,12 +8,4 @@ export interface IFileRepository {
     deleteById(id: string): Promise<void>;
     deleteByDocumentId(documentId: string): Promise<void>;
     deleteAllByUserId(userId: string): Promise<void>;
-    findAllByUserId(userId: string): Promise<File[]>;
-    findAllByDocumentId(documentId: string): Promise<File[]>;
-    findAllByUserIdAndDocumentId(userId: string, documentId: string): Promise<File[]>;
-    findAllByUserIdAndDocumentIdAndFileType(
-        userId: string,
-        documentId: string,
-        fileType: string
-    ): Promise<File[]>;
 }

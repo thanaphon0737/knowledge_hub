@@ -35,17 +35,17 @@
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-            - [ ] CreateFile
-            - [ ] GetFileByUser
-            - [ ] UpdateFile
-            - [ ] DeleteFile
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] UpdateFile
+            - [x] DeleteFile
         - [x] implement repository
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [ ] CreateFile
-            - [ ] GetFileByUser
+            - [ ] GetFileById
             - [ ] UpdateFile
             - [ ] DeleteFile
         - [x] implement usecase
