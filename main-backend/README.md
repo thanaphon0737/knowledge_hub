@@ -44,16 +44,16 @@
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-            - [ ] CreateFile
-            - [ ] GetFileById
-            - [ ] UpdateFile
-            - [ ] DeleteFile
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] UpdateFile
+            - [x] DeleteFile
         - [x] implement usecase
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-            - [ ] CreateFile
+            - [x] CreateFile
             - [ ] GetFileByUser
             - [ ] UpdateFile
             - [ ] DeleteFile
@@ -62,7 +62,7 @@
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-            - [ ] CreateFile
+            - [x] CreateFile
             - [ ] GetFileByUser
             - [ ] UpdateFile
             - [ ] DeleteFile
@@ -71,7 +71,7 @@
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-            - [ ] CreateFile
+            - [x] CreateFile
             - [ ] GetFileByUser
             - [ ] UpdateFile
             - [ ] DeleteFile
