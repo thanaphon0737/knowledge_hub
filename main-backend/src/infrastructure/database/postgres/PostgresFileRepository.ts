@@ -40,10 +40,11 @@ export class PostgresFileRepository implements IFileRepository {
       file_size,
       file_type,
       processing_status,
+      file_name
     } = file;
     const query = `
-            INSERT INTO files (document_id, source_type, source_location, file_size, file_type, processing_status)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO files (document_id, source_type, source_location, file_size, file_type, processing_status, file_name)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *;
         `;
     const values = [
@@ -53,6 +54,7 @@ export class PostgresFileRepository implements IFileRepository {
       file_size,
       file_type,
       processing_status,
+      file_name
     ];
 
     return pool
