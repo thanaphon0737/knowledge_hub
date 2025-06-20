@@ -29,7 +29,7 @@
             - [x] chat_session
         - [x] create repository interface (port)
             - [x] IDocumentRepository
-            - [ ] IFileRepository
+            - [x] IFileRepository
         - [x] create Usecase files
             - [x] CreateDocument
             - [x] GetDocumentByUser
@@ -54,7 +54,7 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileByUser
+            - [ ] GetFileById
             - [ ] UpdateFile
             - [ ] DeleteFile
         - [x] implement controller
@@ -63,7 +63,7 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileByUser
+            - [ ] GetFileById
             - [ ] UpdateFile
             - [ ] DeleteFile
         - [x] implement routes
@@ -72,7 +72,7 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileByUser
+            - [ ] GetFileById
             - [ ] UpdateFile
             - [ ] DeleteFile
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
