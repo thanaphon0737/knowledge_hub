@@ -37,6 +37,7 @@
             - [x] DeleteDocument
             - [x] CreateFile
             - [x] GetFileById
+            - [x] GetFileByDocumentId
             - [x] UpdateFile
             - [x] DeleteFile
         - [x] implement repository
@@ -46,6 +47,7 @@
             - [x] DeleteDocument
             - [x] CreateFile
             - [x] GetFileById
+            - [x] GetFileByDocumentId
             - [x] UpdateFile
             - [x] DeleteFile
         - [x] implement usecase
@@ -54,8 +56,9 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileById
-            - [ ] UpdateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
             - [ ] DeleteFile
         - [x] implement controller
             - [x] CreateDocument
@@ -63,7 +66,8 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileById
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
             - [ ] UpdateFile
             - [ ] DeleteFile
         - [x] implement routes
@@ -72,7 +76,8 @@
             - [x] UpdateDocument
             - [x] DeleteDocument
             - [x] CreateFile
-            - [ ] GetFileById
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
             - [ ] UpdateFile
             - [ ] DeleteFile
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
