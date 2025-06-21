@@ -4,7 +4,7 @@ import { createDocument } from "../controllers/DocumentController";
 import { getDocumentById, getDocuments } from "../controllers/DocumentController";
 import { updateDocument } from "../controllers/DocumentController";
 import { deleteDocument } from "../controllers/DocumentController";
-import { getFileByDocumentId } from "../controllers/FileController";
+import { deleteFilesByDocumentId, getFileByDocumentId } from "../controllers/FileController";
 
 const router = Router();
 
@@ -17,5 +17,5 @@ router.get('/documents/:documentId/files',authMiddleware,getFileByDocumentId);
 router.patch('/documents/:id', authMiddleware, updateDocument);
 
 router.delete('/documents/:id', authMiddleware, deleteDocument);
-
+router.delete('/documents/:documentId/files',authMiddleware,deleteFilesByDocumentId)
 export default router;
