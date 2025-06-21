@@ -12,7 +12,12 @@ import { CreateFileUseCase } from "../../../application/use-cases/file/CreateFil
 import { GetFileByIdUseCase } from "../../../application/use-cases/file/GetFileById.usecase";
 import { GetFileByDocumentIdUseCase } from "../../../application/use-cases/file/GetFilesByDocumentId.usecase";
 import { UpdateFileUsecase } from "../../../application/use-cases/file/UpdateFile.usecase";
+
+import { DeleteFilesByUserIdUsecase } from "../../../application//use-cases/file/DeleteFilesByUserId.usecase"
+import { DeleteFilesByDocumentIdUsecase } from "../../../application/use-cases/file/DeleteFilesByDocumentId.usecase";
+import { DeletesFileByIdUsecase } from "../../../application/use-cases/file/DeleteFileById.usecase";
 // -- สร้าง Instance ของ Repository --
+
 const fileRepository = new PostgresFileRepository();
 
 export const createFile: RequestHandler = async (req, res) => {
@@ -173,3 +178,49 @@ export const updateFile: RequestHandler = async (req, res) => {
     res.status(200).json({ success: true, data: FilesResponse });
   } catch (error: any) {}
 };
+
+export const deleteFilesByUserId: RequestHandler = async  (req,res) => {
+  const userId = req.user?.id;
+  if(!userId){
+    res.status(400).json({sucess: false, message: "user ID not found."})
+    return
+  }
+  try {
+    const deleteFilesByUserIdUseCase = new DeleteFilesByUserIdUsecase(fileRepository);
+    await deleteFilesByUserIdUseCase.execute(userId);
+    res.status(204).send();
+  }catch(error: any){
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export const deleteFilesByDocumentId: RequestHandler = async (req,res) => {
+  const documentId = req.params.documentId
+  if(!documentId){
+    res.status(400).json({sucess: false, message: "Document ID not found."})
+    return
+  }
+  try {
+    const deleteFilesByDocumentIdUsecase = new DeleteFilesByDocumentIdUsecase(fileRepository);
+    await deleteFilesByDocumentIdUsecase.execute(documentId);
+    res.status(204).send();
+
+  }catch(error: any){
+    res.status(400).json({ sucess: false, message: error.message})
+  }
+}
+
+export const deleteFileById: RequestHandler = async (req,res) => {
+  const id = req.params.id
+  if(!id) {
+    res.status(400).json({sucesss: false, message: "file ID not found"})
+    return
+  }
+  try{
+    const deleteFileByIdUseCase = new DeletesFileByIdUsecase(fileRepository);
+    await deleteFileByIdUseCase.execute(id)
+    res.status(204).send();
+  }catch(error: any) {
+    res.status(400).json({sucesss: false, message: error.message})
+  }
+}

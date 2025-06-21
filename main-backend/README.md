@@ -59,7 +59,7 @@
             - [x] GetFileById
             - [x] GetFileByDocumentId
             - [x] UpdateFile
-            - [ ] DeleteFile
+            - [x] DeleteFile
         - [x] implement controller
             - [x] CreateDocument
             - [x] GetDocumentByUser
@@ -68,8 +68,8 @@
             - [x] CreateFile
             - [x] GetFileById
             - [x] GetFileByDocumentId
-            - [ ] UpdateFile
-            - [ ] DeleteFile
+            - [x] UpdateFile
+            - [x] DeleteFile
         - [x] implement routes
             - [x] CreateDocument
             - [x] GetDocumentByUser
@@ -78,7 +78,7 @@
             - [x] CreateFile
             - [x] GetFileById
             - [x] GetFileByDocumentId
-            - [ ] UpdateFile
+            - [x] UpdateFile
             - [ ] DeleteFile
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
