@@ -22,5 +22,5 @@ export class UpdateDocumentUseCase {
     }
 
     return updatedDocument;
-  }
+  } 
 }
