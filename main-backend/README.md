@@ -22,39 +22,64 @@
     - [x] api return list of all table for debuging
 - [ ] Design RESTful API endpoints
     - [ ] Define clear resource naming conventions
-        -[x] create domain entities
-            -[x] documents
-            -[x] files
-            -[x] chat_message
-            -[x] chat_session
-        -[x] create repository interface (port)
+        - [x] create domain entities
+            - [x] documents
+            - [x] files
+            - [x] chat_message
+            - [x] chat_session
+        - [x] create repository interface (port)
             - [x] IDocumentRepository
-            - [ ] IFileRepository
-        -[x] create Usecase files
+            - [x] IFileRepository
+        - [x] create Usecase files
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-        -[ ] implement repository
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
+            - [x] DeleteFile
+        - [x] implement repository
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-        -[ ] implement usecase
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
+            - [x] DeleteFile
+        - [x] implement usecase
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-        -[ ] implement controller
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
+            - [x] DeleteFile
+        - [x] implement controller
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
-        -[ ] implement routes
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
+            - [x] DeleteFile
+        - [x] implement routes
             - [x] CreateDocument
             - [x] GetDocumentByUser
             - [x] UpdateDocument
             - [x] DeleteDocument
+            - [x] CreateFile
+            - [x] GetFileById
+            - [x] GetFileByDocumentId
+            - [x] UpdateFile
+            - [ ] DeleteFile
     - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [ ] Implement input validation and error handling
