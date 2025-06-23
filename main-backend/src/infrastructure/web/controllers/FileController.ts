@@ -13,54 +13,77 @@ import { GetFileByIdUseCase } from "../../../application/use-cases/file/GetFileB
 import { GetFileByDocumentIdUseCase } from "../../../application/use-cases/file/GetFilesByDocumentId.usecase";
 import { UpdateFileUsecase } from "../../../application/use-cases/file/UpdateFile.usecase";
 
-import { DeleteFilesByUserIdUsecase } from "../../../application//use-cases/file/DeleteFilesByUserId.usecase"
+import { DeleteFilesByUserIdUsecase } from "../../../application//use-cases/file/DeleteFilesByUserId.usecase";
 import { DeleteFilesByDocumentIdUsecase } from "../../../application/use-cases/file/DeleteFilesByDocumentId.usecase";
 import { DeletesFileByIdUsecase } from "../../../application/use-cases/file/DeleteFileById.usecase";
+import { buffer } from "stream/consumers";
+import upload from "../middlewares/upload.middleware";
 // -- สร้าง Instance ของ Repository --
 
 const fileRepository = new PostgresFileRepository();
 const processingService = new AIServiceClient();
 export const createFile: RequestHandler = async (req, res) => {
-  const {
-    documentId,
-    sourceType,
-    fileName,
-    sourceLocation,
-    fileSize,
-    fileType,
-    processingStatus,
-  } = req.body;
-  const userId = req.user?.id
-  if(!userId){
-    res.status(400).json({ success: false, message: "userId not found"})
+  const documentId = req.params.documentId;
+  const userId = req.user?.id;
+  const user = req.user;
+  const uploadedFile = req.file;
+  if (!user) {
+    res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!uploadedFile) {
+    res.status(400).json({ message: "No file uploaded." });
+  }
+  if (!userId) {
+    res.status(400).json({ success: false, message: "userId not found" });
     return;
   }
-  if (
-    !documentId ||
-    !sourceType ||
-    !fileName ||
-    !sourceLocation ||
-    !fileSize ||
-    !fileType ||
-    !processingStatus
-  ) {
+  if (!documentId) {
+    res.status(400).json({ success: false, message: "Document Id not found" });
+    return;
+  }
+  if (typeof uploadedFile?.size !== "number") {
     res
       .status(400)
-      .json({ success: false, message: "All fields are required" });
+      .json({
+        success: false,
+        message: "Uploaded file size is missing or invalid.",
+      });
     return;
   }
+  if (typeof uploadedFile?.mimetype !== "string") {
+    res
+      .status(400)
+      .json({
+        success: false,
+        message: "Uploaded file type is missing or invalid.",
+      });
+    return;
+  }
+  console.log("recieve file for document: ", documentId);
+  console.log("file details: ", {
+    originalname: uploadedFile?.originalname,
+    mimetype: uploadedFile?.mimetype,
+    size: uploadedFile?.size,
+    buffer: uploadedFile?.buffer,
+  });
 
   try {
     // สร้างและเรียกใช้ CreateFileUseCase
-    const createFileUseCase = new CreateFileUseCase(fileRepository,processingService);
+    const localFilePath = uploadedFile.path;
+    const processingStatus = "PENDING";
+    const createFileUseCase = new CreateFileUseCase(
+      fileRepository,
+      processingService
+    );
     const file = await createFileUseCase.execute(
       userId,
       documentId,
-      sourceType,
-      fileName,
-      sourceLocation,
-      fileSize,
-      fileType,
+      uploadedFile.mimetype,
+      uploadedFile?.originalname,
+      localFilePath,
+      uploadedFile.size,
+      uploadedFile.mimetype,
       processingStatus
     );
 
@@ -162,12 +185,10 @@ export const updateFile: RequestHandler = async (req, res) => {
     });
 
     if (!updatedFile) {
-      res
-        .status(404)
-        .json({
-          success: false,
-          message: "File not found or user does not have permission",
-        });
+      res.status(404).json({
+        success: false,
+        message: "File not found or user does not have permission",
+      });
       return;
     }
     const FilesResponse: FileUpdateDto = {
@@ -184,48 +205,51 @@ export const updateFile: RequestHandler = async (req, res) => {
   } catch (error: any) {}
 };
 
-export const deleteFilesByUserId: RequestHandler = async  (req,res) => {
+export const deleteFilesByUserId: RequestHandler = async (req, res) => {
   const userId = req.user?.id;
-  if(!userId){
-    res.status(400).json({sucess: false, message: "user ID not found."})
-    return
+  if (!userId) {
+    res.status(400).json({ sucess: false, message: "user ID not found." });
+    return;
   }
   try {
-    const deleteFilesByUserIdUseCase = new DeleteFilesByUserIdUsecase(fileRepository);
+    const deleteFilesByUserIdUseCase = new DeleteFilesByUserIdUsecase(
+      fileRepository
+    );
     await deleteFilesByUserIdUseCase.execute(userId);
     res.status(204).send();
-  }catch(error: any){
+  } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
-}
+};
 
-export const deleteFilesByDocumentId: RequestHandler = async (req,res) => {
-  const documentId = req.params.documentId
-  if(!documentId){
-    res.status(400).json({sucess: false, message: "Document ID not found."})
-    return
+export const deleteFilesByDocumentId: RequestHandler = async (req, res) => {
+  const documentId = req.params.documentId;
+  if (!documentId) {
+    res.status(400).json({ sucess: false, message: "Document ID not found." });
+    return;
   }
   try {
-    const deleteFilesByDocumentIdUsecase = new DeleteFilesByDocumentIdUsecase(fileRepository);
+    const deleteFilesByDocumentIdUsecase = new DeleteFilesByDocumentIdUsecase(
+      fileRepository
+    );
     await deleteFilesByDocumentIdUsecase.execute(documentId);
     res.status(204).send();
-
-  }catch(error: any){
-    res.status(400).json({ sucess: false, message: error.message})
+  } catch (error: any) {
+    res.status(400).json({ sucess: false, message: error.message });
   }
-}
+};
 
-export const deleteFileById: RequestHandler = async (req,res) => {
-  const id = req.params.id
-  if(!id) {
-    res.status(400).json({sucesss: false, message: "file ID not found"})
-    return
+export const deleteFileById: RequestHandler = async (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).json({ sucesss: false, message: "file ID not found" });
+    return;
   }
-  try{
+  try {
     const deleteFileByIdUseCase = new DeletesFileByIdUsecase(fileRepository);
-    await deleteFileByIdUseCase.execute(id)
+    await deleteFileByIdUseCase.execute(id);
     res.status(204).send();
-  }catch(error: any) {
-    res.status(400).json({sucesss: false, message: error.message})
+  } catch (error: any) {
+    res.status(400).json({ sucesss: false, message: error.message });
   }
-}
+};
