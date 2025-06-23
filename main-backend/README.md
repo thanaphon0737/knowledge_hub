@@ -13,15 +13,15 @@
     - [x] connect database in local(use port 5433)
     - [x] connect database in docker(use port 5432)
 ### Database setup
-- [ ] create sql file
+- [x] create sql file
     - [x] create users table
     - [x] create documents table
 - [ ] use migratation (if have time)
 ### API endpoint
 - [x] first api endpoint run port 3000 local
     - [x] api return list of all table for debuging
-- [ ] Design RESTful API endpoints
-    - [ ] Define clear resource naming conventions
+- [x] Design RESTful API endpoints
+    - [x] Define clear resource naming conventions
         - [x] create domain entities
             - [x] documents
             - [x] files
@@ -79,13 +79,13 @@
             - [x] GetFileById
             - [x] GetFileByDocumentId
             - [x] UpdateFile
-            - [ ] DeleteFile
-    - [ ] Use proper HTTP methods (GET, POST, PUT, DELETE)
+            - [x] DeleteFile
+    - [x] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
-- [ ] Implement input validation and error handling
-    - [ ] Validate request payloads
-    - [ ] Return meaningful error messages and status codes
-- [ ] Add authentication and authorization
+- [x] Implement input validation and error handling
+    - [x] Validate request payloads
+    - [x] Return meaningful error messages and status codes
+- [x] Add authentication and authorization
     - [x] register
         - [x] unit test for register
             - [x] pass all test case
@@ -94,10 +94,10 @@
         - [x] middleware authentication
         - [x] unit test for login
     - [x] Implement JWT or OAuth2
-    - [ ] Protect sensitive endpoints
-- [ ] Write unit and integration tests for endpoints
-    - [ ] Use a testing framework (e.g., Jest, Mocha)
-    - [ ] Mock database and external dependencies
+    - [x] Protect sensitive endpoints
+- [x] Write unit and integration tests for endpoints
+    - [x] Use a testing framework (e.g., Jest, Mocha)
+    - [x] Mock database and external dependencies
 - [ ] Set up logging and monitoring
     - [ ] Log requests and errors
     - [ ] Integrate with monitoring tools
