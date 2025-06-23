@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { PostgresFileRepository } from "../../database/postgres/PostgresFileRepository";
-
+import { AIServiceClient } from "../../services/AIServiceClient";
 import {
   FileCreateDto,
   FileResponseDto,
@@ -19,7 +19,7 @@ import { DeletesFileByIdUsecase } from "../../../application/use-cases/file/Dele
 // -- สร้าง Instance ของ Repository --
 
 const fileRepository = new PostgresFileRepository();
-
+const processingService = new AIServiceClient();
 export const createFile: RequestHandler = async (req, res) => {
   const {
     documentId,
@@ -30,7 +30,11 @@ export const createFile: RequestHandler = async (req, res) => {
     fileType,
     processingStatus,
   } = req.body;
-
+  const userId = req.user?.id
+  if(!userId){
+    res.status(400).json({ success: false, message: "userId not found"})
+    return;
+  }
   if (
     !documentId ||
     !sourceType ||
@@ -48,8 +52,9 @@ export const createFile: RequestHandler = async (req, res) => {
 
   try {
     // สร้างและเรียกใช้ CreateFileUseCase
-    const createFileUseCase = new CreateFileUseCase(fileRepository);
+    const createFileUseCase = new CreateFileUseCase(fileRepository,processingService);
     const file = await createFileUseCase.execute(
+      userId,
       documentId,
       sourceType,
       fileName,

@@ -80,6 +80,9 @@
             - [x] GetFileByDocumentId
             - [x] UpdateFile
             - [x] DeleteFile
+        - [] implement ai-service call
+            -[] interface
+            -[] call ai-services
     - [x] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [x] Implement input validation and error handling
