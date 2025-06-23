@@ -37,3 +37,7 @@ This project is a personal knowledge management system that uses AI to understan
 - [ ] Write basic unit tests for critical parts
 - [ ] Polish UI/UX and finalize README documentation
 - [ ] **(Stretch Goal)** Add advanced RAG features (Hybrid Search, Re-ranking)
+
+### User Flow Diagram
+- setup flow ![setupflow](./Diagrams/UserFlow.drawio.png)
+- query flow ![queryflow](./Diagrams/QueryFlow.drawio.png)
