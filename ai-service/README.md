@@ -7,11 +7,15 @@
 ### API endpoint
     - [x] create main.py
     - [x] create Dockerfile
-    - [ ] docker-compose
+    - [x] docker-compose
     - [x] test connection 
 ### Core logic
-    - [ ] create module for Document loader
-    - [ ] create module for Textsplitter/Chunking
-    - [ ] create module for Embedding
-    - [ ] create module for connect with ChromaDB
-    - [ ] connect all wires
+    - [x] create module for Document loader
+    - [x] create module for Textsplitter/Chunking
+    - [x] create module for Embedding
+    - [x] create module for connect with ChromaDB
+    - [x] connect all wires
+### Implement integretion with web backend
+    - [] test connection
+    - [] e2e process document
+    - [] e2e query with RAG
