@@ -49,7 +49,9 @@ export class CreateFileUseCase {
     // call ai service
     const fileInfo = {
         fileId:file.id,
-        userId:userId
+        userId:userId,
+        sourceType: file.source_type,
+        sourceLocation: file.source_location
     }
     await this.processingService.startProcessing(fileInfo)
     // 3. Return Created File

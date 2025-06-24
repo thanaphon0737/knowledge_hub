@@ -7,6 +7,7 @@ import { CreateFileUseCase } from "../CreateFile.usecase"
 import { IFileRepository } from '../../../repositories/IFileRepository';
 import { File } from '../../../../domain/entities/file.entity'
 import { mock, MockProxy } from 'jest-mock-extended';
+import { IProcessingService } from "../../../services/IProcessingService";
 
 /**
  * Test suite for the CreateFileUseCase.
@@ -17,10 +18,13 @@ import { mock, MockProxy } from 'jest-mock-extended';
 describe('CreateFileUseCase', () => {
     // Mock the IFileRepository dependency to isolate the use case from the database layer.
     let fileRepository: MockProxy<IFileRepository>;
+    let processingService : MockProxy<IProcessingService>;
+
     let createFileUseCase: CreateFileUseCase;
 
     // Sample valid data for creating a file.
     const validFileData = {
+        userId: 'user-123',
         documentId: 'doc-123',
         sourceType: 'upload',
         fileName: 'test-document.pdf',
@@ -53,8 +57,9 @@ describe('CreateFileUseCase', () => {
     beforeEach(() => {
         // Create a new mock for the repository before each test.
         fileRepository = mock<IFileRepository>();
+        processingService = mock<IProcessingService>();
         // Instantiate the use case with the mocked repository.
-        createFileUseCase = new CreateFileUseCase(fileRepository);
+        createFileUseCase = new CreateFileUseCase(fileRepository,processingService);
     });
 
     //================================================================//
@@ -71,6 +76,7 @@ describe('CreateFileUseCase', () => {
 
         // Act: Execute the use case with valid data.
         const result = await createFileUseCase.execute(
+            validFileData.userId,
             validFileData.documentId,
             validFileData.sourceType,
             validFileData.fileName,
@@ -108,6 +114,7 @@ describe('CreateFileUseCase', () => {
      * This test checks that the use case throws an error if any required field is missing.
      */
     test.each([
+        { field: 'userId', value: '' },
         { field: 'documentId', value: '' },
         { field: 'sourceType', value: '' },
         { field: 'fileName', value: '' },
@@ -122,6 +129,7 @@ describe('CreateFileUseCase', () => {
         // Act & Assert: Execute the use case and expect it to throw a specific error.
         await expect(
             createFileUseCase.execute(
+                invalidData.userId,
                 invalidData.documentId,
                 invalidData.sourceType,
                 invalidData.fileName,
@@ -151,6 +159,7 @@ describe('CreateFileUseCase', () => {
         // Act & Assert: Execute the use case and expect it to reject with the same error.
         await expect(
             createFileUseCase.execute(
+                validFileData.userId,
                 validFileData.documentId,
                 validFileData.sourceType,
                 validFileData.fileName,

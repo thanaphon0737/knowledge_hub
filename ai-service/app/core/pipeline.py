@@ -1,3 +1,4 @@
+import json
 import os
 import asyncio
 from typing import List, Dict, Any, Tuple, Optional
@@ -92,8 +93,8 @@ class RagPipeline:
             return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
         
         prompt = self._build_prompt(question, retrieved_docs)
-        print(f'Prompt Template:\n{prompt}')   
-        
+        # print(f'Prompt Template:\n{prompt}')   
+        # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
         response = llm.invoke(prompt)
         generated_answer = response.content
@@ -106,8 +107,11 @@ class RagPipeline:
             for doc in retrieved_docs
         ] 
         # print(f"Generated Answer: {generated_answer}")
-        # print(f"Sources: {sources}")
-        return {"answer": generated_answer, "sources": sources}
+        print(f"Sources: {type(sources)}")
+        print(f"Sources: {sources[0]}")
+        result = {"answer": generated_answer, "sources": sources}
+        # response_ans = json.dumps(result, indent=2, ensure_ascii=False)
+        return result
 
 if __name__ == "__main__":
     

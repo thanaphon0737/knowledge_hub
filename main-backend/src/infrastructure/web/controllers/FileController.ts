@@ -23,6 +23,7 @@ import upload from "../middlewares/upload.middleware";
 const fileRepository = new PostgresFileRepository();
 const processingService = new AIServiceClient();
 export const createFile: RequestHandler = async (req, res) => {
+  
   const documentId = req.params.documentId;
   const userId = req.user?.id;
   const user = req.user;
@@ -70,16 +71,23 @@ export const createFile: RequestHandler = async (req, res) => {
 
   try {
     // สร้างและเรียกใช้ CreateFileUseCase
-    const localFilePath = uploadedFile.path;
-    const processingStatus = "PENDING";
+    const localFilePath:string = uploadedFile.path;
+    const processingStatus:string = "pending";
+    let sourceType: string;
+    if (uploadedFile.mimetype === "application/pdf"){
+      sourceType = "upload"
+    }else{
+      sourceType = "url"
+    }
     const createFileUseCase = new CreateFileUseCase(
       fileRepository,
       processingService
     );
+
     const file = await createFileUseCase.execute(
       userId,
       documentId,
-      uploadedFile.mimetype,
+      sourceType,
       uploadedFile?.originalname,
       localFilePath,
       uploadedFile.size,

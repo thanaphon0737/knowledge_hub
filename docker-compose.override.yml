@@ -1,0 +1,18 @@
+services:
+  main-backend:
+    build:
+      # Override the build step to use the development Dockerfile
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Mount your local source code into the container for live-reloading
+      - ./main-backend:/app
+      # Use an anonymous volume to "hide" the node_modules from your local machine
+      - /app/node_modules
+    command: npm run dev # Explicitly tell it to run the dev script
+
+  ai-service:
+    build:
+      dockerfile: Dockerfile.dev # Assuming you have a similar Dockerfile.dev for the AI service
+    volumes:
+      - ./ai-service/app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload # Use uvicorn's reload feature
