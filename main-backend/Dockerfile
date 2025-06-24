@@ -1,10 +1,8 @@
-# Dockerfile (in the same directory)
 FROM node:24-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --production
-RUN npm install nodemon -g
-# Copy the rest of the application code 
+RUN npm install --omit=dev
 COPY . .
+RUN npm run build
 EXPOSE 3000
-CMD ["node", "src/app.js"]
+CMD [ "npm", "start" ]

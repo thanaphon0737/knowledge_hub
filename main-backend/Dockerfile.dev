@@ -1,0 +1,8 @@
+FROM node:24-alpine
+WORKDIR /app
+COPY package*.json ./
+# Install all dependencies, including dev ones
+RUN npm install
+COPY . .
+# The command is set here, but will often be overridden by the override file
+CMD [ "npm", "run", "dev" ]

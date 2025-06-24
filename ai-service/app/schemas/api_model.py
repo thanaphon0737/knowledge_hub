@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List,Dict,Any
 class HealthCheckResponse(BaseModel):
     status: str = Field(..., description="Health status of the service")
     message: Optional[str] = Field(None, description="Optional message providing additional information about the health status")
@@ -17,9 +17,8 @@ class ProcessResponse(BaseModel):
     
 class SourceDocument(BaseModel):
     """Model representing a source document."""
-    file_id: str = Field(..., description="Unique identifier for the source document")
-    file_name: Optional[str] = Field(None, description="Name of the source document")
-    chunk_text: str
+    page_content: str
+    metadata: Dict[str, Any] # metadata เป็น dictionary ที่มี key เป็น string และ value เป็นอะไรก็ได้
     
 class QueryRequest(BaseModel):
     """Model for query requests."""
@@ -28,5 +27,5 @@ class QueryRequest(BaseModel):
 
     
 class QueryResponse(BaseModel):
-    ans: str = Field(..., description="The answer to the query")
-    sources: List[str] = Field(..., description="List of sources used to generate the answer")
+    answer: str = Field(..., description="The answer to the query")
+    sources: List[SourceDocument] = Field(..., description="List of sources used to generate the answer")

@@ -11,13 +11,14 @@ export class AIServiceClient implements IProcessingService {
   }): Promise<void> {
     try {
       // โค้ดเรียก API จะอยู่ที่นี่ที่เดียว!
-      // await axios.post(`${AISERVICE_URL}/api/v1/process`, {
-      //   file_id: fileInfo.fileId,
-      //   user_id: fileInfo.userId,
-      //   source_type: fileInfo.sourceType,
-      //   source_location: fileInfo.sourceLocation
-      //   //...
-      // });
+      const result = await axios.post(`${AISERVICE_URL}/api/v1/process`, {
+        file_id: fileInfo.fileId,
+        user_id: fileInfo.userId,
+        source_type: fileInfo.sourceType,
+        source_location: fileInfo.sourceLocation
+        //...
+      });
+      
       console.log(
         `Successfully sent processing job for file: ${fileInfo.fileId}`
       );

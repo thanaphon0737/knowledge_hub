@@ -1,7 +1,7 @@
 import {connectToDatabase, pool} from "./infrastructure/database/db";
 import app from "./infrastructure/web/app";
 import 'dotenv/config';
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.NODE_PORT || 3001;
 
 const startServer = async () => {
     try{
