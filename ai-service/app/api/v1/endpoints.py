@@ -61,8 +61,8 @@ async def query_document(
         )
         # print(f"Query result: {result}")
         return api_model.QueryResponse(
-            ans=result["answer"],
-            sources=["sources"]
+            answer=result["answer"],
+            sources=result["sources"]
         )
     except Exception as e:
         raise HTTPException(

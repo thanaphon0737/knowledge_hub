@@ -1,36 +1,25 @@
+FROM python:3.12-slim
 
-FROM python:3.10-slim
-
-# --- Set the working directory inside the container ---
-# All subsequent commands will be run from this path.
+# Set the working directory inside the container
 WORKDIR /app
 
-# --- Set environment variables ---
-# Prevents Python from writing .pyc files to disk.
+# Set environment variables to prevent Python from writing .pyc files
+# and to ensure output is sent straight to the terminal
 ENV PYTHONDONTWRITEBYTECODE 1
-# Ensures Python output is sent straight to the terminal without buffering.
 ENV PYTHONUNBUFFERED 1
 
-# --- Install dependencies ---
-# First, copy only the requirements file.
-# This leverages Docker's layer caching. The 'pip install' step will only
-# re-run if the requirements.txt file changes.
+# Copy the requirements file first to leverage Docker's layer caching
 COPY requirements.txt .
+
+# Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- Copy the application code into the container ---
-# Copy the 'app' directory from your project into the container's /app directory.
+# Copy your application code into the container
 COPY ./app /app/app
 
-# --- Expose the port ---
-# Tells Docker that the container will listen on port 8000 at runtime.
-# This is the default port for Uvicorn.
+# Expose the port that the Uvicorn server will run on
 EXPOSE 8000
 
-# --- Define the command to run the application ---
-# This command will be executed when the container starts.
-# It runs the Uvicorn server, pointing it to the FastAPI 'app' instance
-# inside the 'main.py' file.
-# --host 0.0.0.0 makes the server accessible from outside the container.
+# The command to start the Uvicorn server for production
+# Note: We do not use the --reload flag here.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-

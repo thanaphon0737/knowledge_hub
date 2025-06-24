@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Copy and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code. This will be overwritten by the volume mount
+# in docker-compose.override.yml, but it's good practice to have it here.
+COPY ./app /app/app
+
+# The default command to run in development mode
+# This will be overridden by the command in docker-compose.override.yml,
+# but it serves as a good default.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
