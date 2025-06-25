@@ -1,7 +1,7 @@
 import axios from "axios";
 import { IProcessingService } from "../../application/services/IProcessingService";
 import "dotenv/config";
-const AISERVICE_URL = process.env.AISERVICE_URL;
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 const WEBHOOK_URL = process.env.WEBHOOK_URL
 export class AIServiceClient implements IProcessingService {
   public async startProcessing(fileInfo: {
@@ -12,7 +12,7 @@ export class AIServiceClient implements IProcessingService {
   }): Promise<void> {
     try {
       // โค้ดเรียก API จะอยู่ที่นี่ที่เดียว!
-      const result = await axios.post(`${AISERVICE_URL}/api/v1/process`, {
+      const result = await axios.post(`${AI_SERVICE_URL}/api/v1/process`, {
         file_id: fileInfo.fileId,
         user_id: fileInfo.userId,
         source_type: fileInfo.sourceType,
