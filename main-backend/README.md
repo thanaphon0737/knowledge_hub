@@ -84,7 +84,7 @@
             - [x] interface
             - [x] call ai-services
             - [x] implement webhook for trigger processing status
-            - [ ] api chat QA
+            - [x] api chat QA
     - [x] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [x] Implement input validation and error handling
