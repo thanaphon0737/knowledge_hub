@@ -1,6 +1,7 @@
 import json
 import os
 import asyncio
+import httpx
 from typing import List, Dict, Any, Tuple, Optional
 from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -37,22 +38,45 @@ class ProcessingPipeline:
             
         return chunks, ids
             
-    async def execute(self, file_id: str, user_id: str, source_type: str, source_location: str):
+    async def execute(self, file_id: str, user_id: str, source_type: str, source_location: str,webhook_url: Optional[str]):
+        status_to_report = 'READY'
+        error_msg = None
+        try:
         
-        print(f"Processing pipeline started for file_id: {file_id}")
-        
-        loaded_docs = load_from_source(source_type, source_location)
-        
-        chunks = self.text_splitter.split_documents(loaded_docs)
-        
-        prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id)
-        
-        self.vector_store_service.upsert_documents(
-            documents=prepared_docs,
-            ids=doc_ids,
-        )
-        
-        print(f'Processing pipeline finished for file_id: {file_id}')
+            print(f"Processing pipeline started for file_id: {file_id}")
+            
+            loaded_docs = load_from_source(source_type, source_location)
+            
+            chunks = self.text_splitter.split_documents(loaded_docs)
+            
+            prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id)
+            
+            self.vector_store_service.upsert_documents(
+                documents=prepared_docs,
+                ids=doc_ids,
+            )
+            
+            print(f'Processing pipeline finished for file_id: {file_id}')
+
+            
+        except Exception as e:
+            status_to_report = 'ERROR'
+            error_msg = str(e)
+            print(f'Pipeline FAILED for file_id: {file_id}: {error_msg}')
+            
+        finally:
+            if webhook_url:
+                print(f"Sending status {status_to_report} back to webhook: {webhook_url}")
+                try:
+                    async with httpx.AsyncClient() as client:
+                        await client.patch(webhook_url, json={
+                            "fileId": file_id,
+                            "status": status_to_report,
+                            "errorMessage": error_msg
+                        })
+                except Exception as callback_error:
+                    print(f'FATAL: Could not send status update to webhook for file {file_id}: {callback_error}')
+            
         
         
 class RagPipeline:
