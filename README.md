@@ -14,7 +14,7 @@ This project is a personal knowledge management system that uses AI to understan
 - [x] Plan architecture and select Tech Stack
 - [x] Set up Monorepo Git repository structure
 - [x] Set up Relational Database Schematic
-- [ ] Configure `docker-compose.yml` for local development
+- [x] Configure `docker-compose.yml` for local development
 - [x] Create basic User Authentication API (Register/Login) in `main-backend`
 - [ ] Create basic UI for Login/Register/Dashboard in `frontend`
 
@@ -23,7 +23,7 @@ This project is a personal knowledge management system that uses AI to understan
 - [x] **(AI Service)** Create Worker to consume jobs, perform OCR, and create embeddings
 - [x] **(AI Service)** Store vector embeddings in ChromaDB
 - [ ] **(Frontend)** Create UI for file uploads and status display
-- [ ] **(Integration)** Implement end-to-end document upload flow
+- [x] **(Integration)** Implement end-to-end document upload flow
 
 ### Phase 3: RAG & Chat Interface (Week 3)
 - [x] **(AI Service)** Create API endpoint to handle questions and perform RAG

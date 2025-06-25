@@ -9,3 +9,4 @@ langchain-core
 beautifulsoup4
 langchain-google-genai
 langchain-chroma
+httpx

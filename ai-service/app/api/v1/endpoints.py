@@ -31,7 +31,8 @@ async def process_document(
             file_id=process_request.file_id,
             user_id=process_request.user_id,
             source_type=process_request.source_type,
-            source_location=process_request.source_location
+            source_location=process_request.source_location,
+            webhook_url=process_request.webhook_url
         )
     except Exception as e:
         raise HTTPException(

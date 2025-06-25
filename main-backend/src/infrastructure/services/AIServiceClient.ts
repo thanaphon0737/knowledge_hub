@@ -2,6 +2,7 @@ import axios from "axios";
 import { IProcessingService } from "../../application/services/IProcessingService";
 import "dotenv/config";
 const AISERVICE_URL = process.env.AISERVICE_URL;
+const WEBHOOK_URL = process.env.WEBHOOK_URL
 export class AIServiceClient implements IProcessingService {
   public async startProcessing(fileInfo: {
     fileId: string;
@@ -15,7 +16,8 @@ export class AIServiceClient implements IProcessingService {
         file_id: fileInfo.fileId,
         user_id: fileInfo.userId,
         source_type: fileInfo.sourceType,
-        source_location: fileInfo.sourceLocation
+        source_location: fileInfo.sourceLocation,
+        webhook_url: WEBHOOK_URL
         //...
       });
       

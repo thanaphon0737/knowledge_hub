@@ -9,6 +9,7 @@ class ProcessRequest(BaseModel):
     user_id: Optional[str] = Field(None, description="Optional user identifier for tracking purposes")
     source_type: str = Field(..., description="Type of the source file (e.g., 'pdf', 'docx', 'txt')")
     source_location: str = Field(..., description="Location of the source file (e.g., URL or file path)")
+    webhook_url: Optional[str] = None
     
 class ProcessResponse(BaseModel):
     status: str

@@ -92,7 +92,7 @@ export const createFile: RequestHandler = async (req, res) => {
       localFilePath,
       uploadedFile.size,
       uploadedFile.mimetype,
-      processingStatus
+      processingStatus,
     );
 
     const FileResponse: FileCreateDto = {
