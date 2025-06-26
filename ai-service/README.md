@@ -16,6 +16,6 @@
     - [x] create module for connect with ChromaDB
     - [x] connect all wires
 ### Implement integretion with web backend
-    - [] test connection
-    - [] e2e process document
-    - [] e2e query with RAG
+    - [x] test connection
+    - [x] e2e process document
+    - [x] e2e query with RAG
