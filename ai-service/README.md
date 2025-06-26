@@ -19,3 +19,7 @@
     - [x] test connection
     - [x] e2e process document
     - [x] e2e query with RAG
+### improvement RAG system
+    - [ ] implement Re-ranking
+    - [ ] Using BGE-M3 for multimodal  
+    - [ ] Improve Prompt Engineering
