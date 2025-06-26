@@ -9,7 +9,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.core.document_loader import load_from_source
 from app.core.text_splitter import TextSplitterService
 from app.core.vector_store import VectorStoreService
-
+from sentence_transformers.cross_encoder import CrossEncoder
 
 class ProcessingPipeline:
     
@@ -81,11 +81,30 @@ class ProcessingPipeline:
         
 class RagPipeline:
     
-    def __init__(self,vector_store: VectorStoreService,llm: Optional[ChatGoogleGenerativeAI] = None): 
+    def __init__(self,vector_store: VectorStoreService,llm: Optional[ChatGoogleGenerativeAI] = None, cross_encoder_model_name: str = 'cross-encoder/ms-marco-MiniLM-L-6-v2'): 
         self.vector_store = vector_store
         self.llm = llm
-        print("RagePipeline initialized with VectorStoreService.")
+        self.cross_encoder = CrossEncoder(cross_encoder_model_name)
+        print(f"RagePipeline initialized with VectorStoreService cross encoder ${cross_encoder_model_name}.")
     
+    def _reranker_docuements(self, question: str, retrieve_docs: List[Document], top_n: int = 3 ) -> List[Document]:
+        if not retrieve_docs:
+            return []
+        print(f'---Starting Re-ranking for {len(retrieve_docs)} documents ---')
+        
+        pairs = [[question, doc.page_content] for doc in retrieve_docs]
+        
+        scores = self.cross_encoder.predict(pairs)
+        
+        ranked_docs = sorted(
+            zip(scores, retrieve_docs),
+            key = lambda x : x[0],
+            reverse=True
+        )
+        
+        top_docs = [doc for score, doc in ranked_docs[:top_n]]
+        print(f'--- Re ranking finished. Selected top {len(top_docs)} documents. ---')
+        return top_docs
     def _build_prompt(self, question: str, context_docs: List[Document]) -> str:
         """
         Builds a comprehensive prompt for the LLM by combining a template
@@ -106,18 +125,25 @@ class RagPipeline:
         Answer:
         """
         return prompt_template.strip()
+
     async def get_answer(self, user_id: str, question: str) -> Dict[str, Any]:
         
+        # first step retrieval k=10
+        retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {"user_id": user_id}})
         
-        retriever = self.vector_store.get_retriever(search_kwargs={'k': 3,"filter": {"user_id": user_id}})
         
         retrieved_docs = retriever.invoke(question)
         
         if not retrieved_docs:
             return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
         
-        prompt = self._build_prompt(question, retrieved_docs)
-        # print(f'Prompt Template:\n{prompt}')   
+        
+        # second step re ranking n =3
+        final_docs = self._reranker_docuements(question,retrieved_docs, top_n=3)
+        
+        #  insert finaldocs to prompt
+        prompt = self._build_prompt(question, final_docs)
+        print(f'Prompt Template:\n{prompt}')   
         # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
         response = llm.invoke(prompt)
@@ -128,11 +154,11 @@ class RagPipeline:
                 "page_content": doc.page_content,
                 "metadata": doc.metadata,
             }
-            for doc in retrieved_docs
+            for doc in final_docs
         ] 
         # print(f"Generated Answer: {generated_answer}")
-        print(f"Sources: {type(sources)}")
-        print(f"Sources: {sources[0]}")
+        # print(f"Sources: {type(sources)}")
+        # print(f"Sources: {sources[0]}")
         result = {"answer": generated_answer, "sources": sources}
         # response_ans = json.dumps(result, indent=2, ensure_ascii=False)
         return result
