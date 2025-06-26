@@ -107,16 +107,33 @@ class RagPipeline:
         return top_docs
     def _build_prompt(self, question: str, context_docs: List[Document]) -> str:
         """
-        Builds a comprehensive prompt for the LLM by combining a template
-        with the retrieved context and the user's question.
+        Builds a high-efficiency prompt for the LLM using best practices.
         """
-        context = "\n\n---\n\n".join([doc.page_content for doc in context_docs])
+        # --- Context Formatting ---
+        # We format each piece of context with its source metadata.
+        # This helps the LLM to ground its answer and allows for citation.
+        context_parts = []
+        for i, doc in enumerate(context_docs):
+            source_info = doc.metadata.get('source', 'Unknown Source')
+            page_info = doc.metadata.get('page', 'N/A')
+            context_part = f"Source [{i+1}] (from: {source_info}, page: {page_info}):\n{doc.page_content}"
+            context_parts.append(context_part)
         
+        context = "\n\n---\n\n".join(context_parts)
+        
+        # --- Prompt Template Engineering ---
+        # This template is more explicit and gives stricter instructions to the LLM.
         prompt_template = f"""
-        You are a helpful assistant. Answer the following question based ONLY on the context provided below.
-        If the context does not contain the answer, say "I cannot find the answer in the provided documents."
+        You are a highly precise and factual assistant. Your main task is to answer the user's question with accuracy, based *ONLY* on the information provided in the "Sources" section below.
 
-        Context:
+        Instructions:
+        1.  Analyze the user's question carefully.
+        2.  Read through all the provided sources to find the relevant information.
+        3.  Construct your answer using *ONLY* the information from the sources. Do not add any external knowledge or make assumptions.
+        4.  If the answer cannot be found in the sources, you *MUST* respond with the exact phrase: "I cannot find an answer to your question in the provided documents."
+        5.  (Optional) At the end of your answer, you can cite the sources you used, like `[Source 1]`, `[Source 2]`.
+
+        Sources:
         {context}
 
         Question:
