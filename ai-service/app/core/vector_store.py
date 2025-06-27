@@ -2,6 +2,7 @@
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+
 from typing import List, Dict, Any
 
 # refactored code to use Chroma as the vector store

@@ -7,14 +7,16 @@ from langchain_core.documents import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.document_loader import load_from_source
+from app.core.embedding_service import EmbeddingService
 from app.core.text_splitter import TextSplitterService
 from app.core.vector_store import VectorStoreService
 from sentence_transformers.cross_encoder import CrossEncoder
 
 class ProcessingPipeline:
     
-    def __init__(self,text_splitter: TextSplitterService, vector_store_service: VectorStoreService): 
+    def __init__(self,text_splitter: TextSplitterService,embedding_service: EmbeddingService, vector_store_service: VectorStoreService): 
         self.text_splitter = text_splitter
+        self.embedding_service = embedding_service
         self.vector_store_service = vector_store_service
         print(f"ProcessingPipeline initialized with TextSplitterService and VectorStoreService.")
 
@@ -44,6 +46,8 @@ class ProcessingPipeline:
         try:
         
             print(f"Processing pipeline started for file_id: {file_id}")
+            
+            # in future need process image file
             
             loaded_docs = load_from_source(source_type, source_location)
             

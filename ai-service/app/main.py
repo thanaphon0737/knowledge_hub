@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
-
+from app.core.embedding_service import EmbeddingService
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from app.core.text_splitter import TextSplitterService
 from app.core.vector_store import VectorStoreService
@@ -25,7 +25,8 @@ async def lifespan(app: FastAPI):
     try:
         if not os.getenv("GOOGLE_API_KEY"):
             os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        # embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        embeddings = EmbeddingService()
         text_splitter_service = TextSplitterService(chunk_size=1000, chunk_overlap=200)
         vector_store_service = VectorStoreService(
             embedding_function=embeddings,
@@ -39,6 +40,7 @@ async def lifespan(app: FastAPI):
     print("initializing pipelines...")
     processing_pipline = ProcessingPipeline(
         text_splitter=text_splitter_service,
+        embedding_service = embeddings,
         vector_store_service=vector_store_service
     )
     rag_pipeline = RagPipeline(vector_store=vector_store_service,llm=ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2))
