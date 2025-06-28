@@ -19,11 +19,12 @@ export class CreateFileUseCase {
     fileType: string,
     processingStatus: string
   ): Promise<File> {
-    if(!userId){
-        throw new Error("userId not found")
-    }
+    // if(!userId){
+    //     throw new Error("userId not found")
+    // }
     // 1. Input Validation
     if (
+      !userId ||
       !documentId ||
       !sourceType ||
       !fileName ||
