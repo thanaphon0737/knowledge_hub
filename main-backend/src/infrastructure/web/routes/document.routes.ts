@@ -4,7 +4,7 @@ import { createDocument } from "../controllers/DocumentController";
 import { getDocumentById, getDocuments } from "../controllers/DocumentController";
 import { updateDocument } from "../controllers/DocumentController";
 import { deleteDocument } from "../controllers/DocumentController";
-import { createFile, deleteFilesByDocumentId, getFileByDocumentId } from "../controllers/FileController";
+import { createFileFromUrl,createFile, deleteFilesByDocumentId, getFileByDocumentId } from "../controllers/FileController";
 import upload from "../middlewares/upload.middleware";
 
 const router = Router();
@@ -22,6 +22,7 @@ router.delete('/documents/:id', authMiddleware, deleteDocument);
 
 // files
 router.get('/documents/:documentId/files',authMiddleware,getFileByDocumentId);
-router.post('/documents/:documentId/files',authMiddleware,upload.single('file'),createFile)
+router.post('/documents/:documentId/files/upload',authMiddleware,upload.single('file'),createFile)
+router.post('/documents/:documentId/files/url',authMiddleware,createFileFromUrl)
 router.delete('/documents/:documentId/files',authMiddleware,deleteFilesByDocumentId)
 export default router;

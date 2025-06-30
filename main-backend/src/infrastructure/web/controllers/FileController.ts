@@ -16,14 +16,65 @@ import { UpdateFileUsecase } from "../../../application/use-cases/file/UpdateFil
 import { DeleteFilesByUserIdUsecase } from "../../../application//use-cases/file/DeleteFilesByUserId.usecase";
 import { DeleteFilesByDocumentIdUsecase } from "../../../application/use-cases/file/DeleteFilesByDocumentId.usecase";
 import { DeletesFileByIdUsecase } from "../../../application/use-cases/file/DeleteFileById.usecase";
-import { buffer } from "stream/consumers";
-import upload from "../middlewares/upload.middleware";
+
 // -- สร้าง Instance ของ Repository --
 
 const fileRepository = new PostgresFileRepository();
 const processingService = new AIServiceClient();
+
+export const createFileFromUrl: RequestHandler = async (req, res) => {
+  const documentId = req.params.documentId;
+  const user = req.user;
+  const userId = user?.id;
+  const { sourceUrl } = req.body;
+  if (!user) {
+    res.status(401).json({ message: "Unauthorized" });
+    return
+  }
+  if (!userId) {
+    res.status(400).json({ success: false, message: "userId not found" });
+    return;
+  }
+  if (!documentId) {
+    res.status(400).json({ success: false, message: "Document Id not found" });
+    return;
+  }
+  if (!sourceUrl) {
+    res.status(400).json({ success: false, message: "Source Url not found" });
+    return
+  }
+  try {
+    const createFileUseCase = new CreateFileUseCase(
+      fileRepository,
+      processingService
+    );
+    console.log('create file with Url')
+    const file = await createFileUseCase.execute({
+      userId: userId,
+      documentId: documentId,
+      sourceType: 'url',
+      fileName: sourceUrl,
+      sourceLocation: sourceUrl,
+      fileSize: 0,
+      fileType: 'text/html',
+      processingStatus: 'PENDING',
+    });
+
+    const FileResponse: FileCreateDto = {
+      document_id: file.document_id,
+      source_type: file.source_type,
+      file_name: file.file_name,
+      source_location: file.source_location,
+      file_size: file.file_size,
+      file_type: file.file_type,
+      processing_status: file.processing_status,
+    };
+    res.status(201).json({ success: true, data: FileResponse });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 export const createFile: RequestHandler = async (req, res) => {
-  
   const documentId = req.params.documentId;
   const userId = req.user?.id;
   const user = req.user;
@@ -44,21 +95,17 @@ export const createFile: RequestHandler = async (req, res) => {
     return;
   }
   if (typeof uploadedFile?.size !== "number") {
-    res
-      .status(400)
-      .json({
-        success: false,
-        message: "Uploaded file size is missing or invalid.",
-      });
+    res.status(400).json({
+      success: false,
+      message: "Uploaded file size is missing or invalid.",
+    });
     return;
   }
   if (typeof uploadedFile?.mimetype !== "string") {
-    res
-      .status(400)
-      .json({
-        success: false,
-        message: "Uploaded file type is missing or invalid.",
-      });
+    res.status(400).json({
+      success: false,
+      message: "Uploaded file type is missing or invalid.",
+    });
     return;
   }
   console.log("recieve file for document: ", documentId);
@@ -71,28 +118,25 @@ export const createFile: RequestHandler = async (req, res) => {
 
   try {
     // สร้างและเรียกใช้ CreateFileUseCase
-    const localFilePath:string = uploadedFile.path;
-    const processingStatus:string = "pending";
-    let sourceType: string;
-    if (uploadedFile.mimetype === "application/pdf"){
-      sourceType = "upload"
-    }else{
-      sourceType = "url"
-    }
+    const localFilePath: string = uploadedFile.path;
+    const processingStatus: string = "pending";
+    const sourceType: string = 'upload';
+    
     const createFileUseCase = new CreateFileUseCase(
       fileRepository,
       processingService
     );
 
-    const file = await createFileUseCase.execute(
-      userId,
-      documentId,
-      sourceType,
-      uploadedFile?.originalname,
-      localFilePath,
-      uploadedFile.size,
-      uploadedFile.mimetype,
-      processingStatus,
+    const file = await createFileUseCase.execute({
+      userId: userId,
+      documentId: documentId,
+      sourceType: sourceType,
+      fileName: uploadedFile?.originalname,
+      sourceLocation: localFilePath,
+      fileSize: uploadedFile.size,
+      fileType: uploadedFile.mimetype,
+      processingStatus: 'PENDING',
+    }
     );
 
     const FileResponse: FileCreateDto = {
