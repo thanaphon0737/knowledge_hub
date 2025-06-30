@@ -36,7 +36,6 @@ def load_from_source(source_type:str,source_location: str)-> List[Document]:
         return documents
     except Exception as e:
         raise RuntimeError(f"Failed to load document from {source_location}: {e}")
-    return documents
 
 if __name__ == '__main__':
     # --- Testing a PDF file ---
