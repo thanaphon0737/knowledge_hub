@@ -56,7 +56,8 @@ export const login: RequestHandler = async (req, res) => {
     }
     res.cookie("access_token", token, {
       httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
-      secure: process.env.NODE_ENV === "production", // ใช้ secure cookie ใน production
+      // secure: process.env.NODE_ENV === "production", // ใช้ secure cookie ใน production
+      secure: false,
       sameSite: "strict", // ป้องกัน CSRF
       maxAge: 3600000, // กำหนดอายุของ cookie เป็น 1 ชั่วโมง
     });

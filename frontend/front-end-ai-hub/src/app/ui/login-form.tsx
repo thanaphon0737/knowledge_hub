@@ -1,19 +1,18 @@
 "use client";
 import { useState } from "react";
+import { useAuth} from '@/context/AuthContext';
+import { useRouter} from 'next/navigation';
 import {
   Container,
   Box,
   Typography,
   TextField,
-  InputAdornment,
-  IconButton,
   Button,
   Alert,
   CircularProgress,
 } from "@mui/material";
 import {Grid} from "@mui/material";
 import Link from "next/link";
-import axios from "axios";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -21,19 +20,19 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const {login} = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    console.log(email,password)
     try {
-      const token = await axios.post("http://localhost:3000/api/v1/auth/login", { email, password });
-      console.log(token.data)
-      alert(token.data.success)
+      await login({email,password})
+      router.push('/dashboard')
     } catch (err: any) {
         console.log(err)
-    //   setError(err.response?.data?.message || "An unexpected error occurred.");
+      setError(err.response?.data?.message || "An unexpected error occurred.");
     // setError(err.response)
     } finally {
       setLoading(false);
