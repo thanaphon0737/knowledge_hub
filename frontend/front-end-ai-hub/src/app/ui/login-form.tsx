@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import {Grid} from "@mui/material";
 import Link from "next/link";
+import axios from "axios";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -25,14 +26,18 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // try {
-    //   await api.post("/auth/login", { email, password });
-    //   login(email);
-    // } catch (err) {
+    console.log(email,password)
+    try {
+      const token = await axios.post("http://localhost:3000/api/v1/auth/login", { email, password });
+      console.log(token.data)
+      alert(token.data.success)
+    } catch (err: any) {
+        console.log(err)
     //   setError(err.response?.data?.message || "An unexpected error occurred.");
-    // } finally {
-    //   setLoading(false);
-    // }
+    // setError(err.response)
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,18 +79,7 @@ export default function LoginForm() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {/* {showPassword ? <VisibilityOff /> : <Visibility />} */}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
+            
           />
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
