@@ -51,7 +51,7 @@ export class RegisterUserUseCase {
     const createdUser = await this.userRepository.save(newUser);
     //adding step for auto login
     const token = jwt.sign(
-        { id: createdUser.id, email: createdUser.email },
+        { userId: createdUser.id, email: createdUser.email },
         process.env.JWT_SECRET!,
         { expiresIn: '1h' }
     );
