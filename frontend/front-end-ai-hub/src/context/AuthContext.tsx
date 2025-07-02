@@ -26,7 +26,7 @@ export const AuthProvider = ({
   const login = async (credentials: {email: string, password: string}) => {
     try{
 
-        const token = await apiLogin(credentials);
+        await apiLogin(credentials);
         
         const response = await apiGetProfile();
         const userProfile = response.data.data;
