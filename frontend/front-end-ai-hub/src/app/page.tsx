@@ -1,27 +1,32 @@
 import Image from "next/image";
-
+import Link from "next/link";
+import { Button } from "@mui/material";
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows-[20px_1fr_20px] items-center min-h-screen p-8 pb-20 gap-16 sm: font-[family-name:var(--font-geist-sans)]">
       <header>
-        <div className="flex justify-between w-full px-5">
+        <div className="flex flex-col pt-30 items-center gap-6 sm:flex-row justify-between">
           <div className="flex">
             <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
+              aria-hidden
+              src="/file.svg"
+              alt="File icon"
+              width={16}
+              height={16}
+            />
             AI Knowledge Hub
           </div>
           <div>
-            Log in
+            <Link href="/login">
+              <Button variant="contained">Login</Button>
+            </Link>
           </div>
         </div>
       </header>
       <main>
-        <div className="font-bold p-10 text-center">Welcome to AI Knowledge Hub </div>
+        <div className="font-bold p-10 text-center">
+          Welcome to AI Knowledge Hub{" "}
+        </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <a
