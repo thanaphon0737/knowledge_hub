@@ -4,7 +4,7 @@ import { User } from "../../../domain/entities/user.entity";
 import { IUserRepository } from "../../repositories/IUserRepository";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-
+import * as jwt from 'jsonwebtoken';
 // คลาสนี้จะจัดการกับ Logic การลงทะเบียนผู้ใช้ทั้งหมด
 export class RegisterUserUseCase {
   private userRepository: IUserRepository;
@@ -16,7 +16,7 @@ export class RegisterUserUseCase {
   }
 
   // ฟังก์ชันหลักสำหรับทำงาน
-  async execute(email: string, password: string): Promise<User> {
+  async execute(email: string, password: string): Promise<{ user: User; token: string }> {
     // 1. Input Validation
     if (!email) {
       throw new Error("Email is required");
@@ -49,10 +49,15 @@ export class RegisterUserUseCase {
 
     // 4. บันทึก User ใหม่ลงในฐานข้อมูลผ่าน Repository
     const createdUser = await this.userRepository.save(newUser);
-
+    //adding step for auto login
+    const token = jwt.sign(
+        { userId: createdUser.id, email: createdUser.email },
+        process.env.JWT_SECRET!,
+        { expiresIn: '1h' }
+    );
     // 5. ส่งข้อมูล User ที่สร้างเสร็จแล้วกลับไป (โดยไม่มี password_hash)
     // ในสถานการณ์จริง เราอาจจะสร้าง DTO (Data Transfer Object) เพื่อไม่ให้ password_hash หลุดออกไป
     // แต่ในตัวอย่างนี้ เราจะส่งกลับไปทั้ง object ก่อน
-    return createdUser;
+    return { user: createdUser, token };
   }
 }

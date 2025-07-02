@@ -22,8 +22,14 @@ export const register: RequestHandler = async (req, res) => {
   try {
     // สร้างและเรียกใช้ RegisterUserUseCase
     const registerUserUseCase = new RegisterUserUseCase(userRepository);
-    const user = await registerUserUseCase.execute(email, password);
-
+    const {user,token} = await registerUserUseCase.execute(email, password);
+    //adding set for set cookie
+    res.cookie('access_token',token, {
+      httpOnly:true,
+      secure: false, // for dev
+      sameSite: 'strict',
+      maxAge: 60 *60*1000 // 1hr
+    })
     // แปลงข้อมูล User เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
     const userResponse: UserResponseDto = {
       id: user.id,
