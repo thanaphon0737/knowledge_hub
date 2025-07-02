@@ -13,6 +13,8 @@ import {
   Grid,
 } from "@mui/material";
 import Link from "next/link";
+import {useAuth} from '@/context/AuthContext'
+import {useRouter} from 'next/navigation'
 
 export default function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -20,19 +22,21 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  //   const { login } = useAuth();
+  const router = useRouter();
+    const { register } = useAuth();
   const handleSubmit = async (e:any) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // try {
-    //   await api.post("/auth/register", { email, password });
-    //   login(email);
-    // } catch (err) {
-    //   setError(err.response?.data?.message || "An unexpected error occurred.");
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      await 
+      register({email,password});
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.response?.data?.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <Container component="main" maxWidth="xs">
