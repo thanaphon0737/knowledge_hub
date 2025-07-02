@@ -10,12 +10,13 @@ export const apiLogin = async (credentials: {email: string, password: string}) =
     const result = await axios.post('http://localhost:3000/api/v1/auth/login',credentials,{
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        withCredentials: true
     })
     if(!result){
         console.log('cant login')
     }
-    await createSession(result.data.token)
+    // await createSession(result.data.token)
     
     return result
   } catch (err: any) {

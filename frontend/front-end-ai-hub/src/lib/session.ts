@@ -7,10 +7,7 @@ interface UserPayload {
     email: string;
 }
 
-export async function createSession(token:string) {
-    const cookieStore = await cookies();
-    cookieStore.set('access_token',token)
-}
+
 export async function getCurrentUser(): Promise<UserPayload | null > {
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
