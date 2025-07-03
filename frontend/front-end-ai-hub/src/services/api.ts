@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { deleteSession } from "@/lib/session";
+import { idID } from "@mui/material/locale";
 // const apiClient = axios.create({
 //     baseURL: 'http://localhost:3000/api/v1',
 //     withCredentials: true,
@@ -75,4 +76,17 @@ export function apiCreateDocuments(data: {
     },
     withCredentials: true,
   });
+}
+
+export function apiGetDocumentById(id: string) {
+  return axios.get(`http://localhost:3000/api/v1/documents/${id}`, {
+    withCredentials: true,
+  });
+}
+
+export function apiGetFileByDocumentId(id: string) {
+  return axios.get(
+    `http://localhost:3000/api/v1/documents/${id}/files`,
+    { withCredentials: true }
+  );
 }
