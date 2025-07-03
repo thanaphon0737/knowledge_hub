@@ -29,7 +29,9 @@ export default function LoginForm() {
     setError("");
     try {
       await login({email,password})
+      
       router.push('/dashboard')
+
     } catch (err: any) {
         console.log(err)
       setError(err.response?.data?.message || "An unexpected error occurred.");
