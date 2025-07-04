@@ -17,10 +17,25 @@ function DocumentPageEdit({ params }: { params: Promise<{ id: string }> }) {
   const fetchDetails = async () => {
     setLoading(true);
     try {
-      const docResponse = await apiGetDocumentById(id);
-      const filesResponse = await apiGetFileByDocumentId(id);
-      setDocument(docResponse.data)
-      setFiles(filesResponse.data);
+      // const docResponse = await apiGetDocumentById(id);
+      // const filesResponse = await apiGetFileByDocumentId(id);
+      const promises = [
+        apiGetDocumentById(id),
+        apiGetFileByDocumentId(id)
+      ]
+      const result = await Promise.allSettled(promises);
+      if(result[0].status === 'fulfilled'){
+        setDocument(result[0].value.data.data);
+      }else{
+        console.error('Failed to fetch document:', result[0].reason);
+      }
+
+      if(result[1].status === 'fulfilled'){
+        setFiles(result[1].value.data.data);
+      }else{
+        console.error('Failed to fetch files:',result[1].reason)
+      }
+      
     } catch (error) {
       console.error("Failed to fetch document details", error);
       // Handle error state here, e.g., show a notification
