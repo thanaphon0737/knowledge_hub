@@ -1,6 +1,6 @@
 "use client";
 
-import { apiCreateFileWithUrl,apiCreateFilewithPdf } from "@/services/api";
+import { apiCreateFileWithUrl, apiCreateFilewithPdf } from "@/services/api";
 import {
   Alert,
   Box,
@@ -70,6 +70,7 @@ function UploadModal({
       onUploadSuccess();
       handleClose();
     } catch (err: any) {
+      console.error(err);
       setError(err.response?.data?.message || "An error occurred.");
     } finally {
       setIsLoading(false);

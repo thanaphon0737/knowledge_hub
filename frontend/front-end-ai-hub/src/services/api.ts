@@ -92,7 +92,13 @@ export function apiGetFileByDocumentId(id: string) {
 }
 
 export function apiCreateFilewithPdf(documentId:string, file:File){
-  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/upload`,file,{
+  const formData = new FormData();
+  formData.append('file',file);
+  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/upload`,formData,{
+    headers: {
+
+      'Content-Type': 'multipart/form-data'
+    },
     withCredentials:true
   })
 }
