@@ -100,7 +100,7 @@ function DocumentDetailClientPage({
     // Define the async data fetching function inside useEffect
 
     fetchDetails();
-  }, [id]); // The dependency array ensures this effect runs again if the id changes
+  }, [id,initialFiles]); // The dependency array ensures this effect runs again if the id changes
   const handleUploadSuccess = () => {
     console.log("New source added! Calling router.refresh()...");
     // This now works as expected! It tells Next.js to re-run the
