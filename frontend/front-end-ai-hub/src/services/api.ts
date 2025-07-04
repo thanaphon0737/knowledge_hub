@@ -101,3 +101,7 @@ export function apiCreateFileWithUrl(documentId: string, sourceUrl:string){
   const payload = {sourceUrl:sourceUrl}
   return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/url`,payload,{withCredentials:true})
 }
+
+export function apiQueryQuestion(question: string){
+  return axios.post(`http://localhost:3000/api/v1/query`,{question:question},{withCredentials:true})
+}
