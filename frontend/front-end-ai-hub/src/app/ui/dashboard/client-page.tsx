@@ -48,18 +48,20 @@ type FileType = {
 };
 interface DocumentClientPageProps {
   documentId: string;
-  initialFiles: FileType[];
+  initialDoc: DocumentType|null;
+  initialFiles: FileType[]|null;
 }
 
 function DocumentDetailClientPage({
   documentId,
+  initialDoc,
   initialFiles,
 }: DocumentClientPageProps) {
   const id = documentId;
   // The 'files' state is now initialized with data from the server.
   // Define a type for your document object
 
-  const [document, setDocument] = useState<DocumentType | null>(null);
+  const [document, setDocument] = useState<DocumentType | null>(initialDoc);
   const [files, setFiles] = useState<FileType[]>(initialFiles);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
