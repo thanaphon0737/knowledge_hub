@@ -62,7 +62,7 @@ function DocumentDetailClientPage({
   // Define a type for your document object
 
   const [document, setDocument] = useState<DocumentType | null>(initialDoc);
-  const [files, setFiles] = useState<FileType[]>(initialFiles);
+  const [files, setFiles] = useState<FileType[]|null>(initialFiles);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -197,7 +197,7 @@ function DocumentDetailClientPage({
               <CircularProgress />
             </ListItem>
           ) : (
-            files.map((file) => (
+            files?.map((file) => (
               <ListItem
                 key={file.id}
                 secondaryAction={<StatusChip status={file.processing_status} />}

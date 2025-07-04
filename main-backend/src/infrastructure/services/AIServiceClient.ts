@@ -12,6 +12,8 @@ export class AIServiceClient implements IProcessingService {
   }): Promise<void> {
     try {
       // โค้ดเรียก API จะอยู่ที่นี่ที่เดียว!
+      console.log('initial main-backend --> ai-service process....')
+      console.log(`call api: ${AI_SERVICE_URL}/api/v1/process`)
       const result = await axios.post(`${AI_SERVICE_URL}/api/v1/process`, {
         file_id: fileInfo.fileId,
         user_id: fileInfo.userId,
