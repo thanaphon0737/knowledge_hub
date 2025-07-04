@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, createContext, useRef } from 'react';
+Errorimport React, { useState, useEffect, useContext, createContext, useRef } from 'react';
 import { createTheme, ThemeProvider, CssBaseline, Container, Box, AppBar, Toolbar, Typography, Button, Card, CardContent, CardActions, Grid, TextField, Modal, Paper, List, ListItem, ListItemIcon, ListItemText, Chip, CircularProgress, Alert, BottomNavigation, BottomNavigationAction, Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab, IconButton, InputAdornment } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Description, UploadFile, Chat, BarChart as BarChartIcon, Add, Logout, Visibility, VisibilityOff, Home, Close, Link as LinkIcon, CheckCircle, Error, HourglassTop, Send, ExpandMore, FilePresent } from '@mui/icons-material';
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('ai-hub-user');
   };
   const value = { user, loading, login, logout };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 // =================================================================================
@@ -300,11 +300,33 @@ const RegisterPage = ({ onSwitchToLogin }) => {
 };
 
 // =================================================================================
+// src/components/dialogs/CreateDocumentDialog.jsx
+// =================================================================================
+const CreateDocumentDialog = ({ open, onClose, onCreate }) => {
+  // This component now receives the 'open' state and control functions as props.
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Create New Document</DialogTitle>
+      <DialogContent>
+        <TextField autoFocus margin="dense" id="doc-name" label="Document Name" type="text" fullWidth variant="standard" sx={{ mb: 2 }} />
+        <TextField margin="dense" id="doc-desc" label="Description" type="text" fullWidth multiline rows={3} variant="standard" />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onCreate} variant="contained">Create</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// =================================================================================
 // src/views/DashboardPage.jsx
 // =================================================================================
 const DashboardPage = ({ onNavigateToDocument }) => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
     useEffect(() => {
         const fetchDocs = async () => {
             try {
@@ -316,15 +338,26 @@ const DashboardPage = ({ onNavigateToDocument }) => {
         fetchDocs();
     }, []);
 
+    const handleCreateDocument = () => {
+        console.log('Creating new document...');
+        setIsCreateModalOpen(false);
+    };
+
     return (
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" component="h1" fontWeight="bold">Dashboard</Typography>
-                <Button variant="contained" startIcon={<Add />}>Create Document</Button>
+                <Button variant="contained" startIcon={<Add />} onClick={() => setIsCreateModalOpen(true)}>Create Document</Button>
             </Box>
             <Grid container spacing={3}>
                 {loading ? Array.from(new Array(3)).map((_, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}><Card><CardContent><Typography variant="h5"><CircularProgress /></Typography></CardContent></Card></Grid>
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card>
+                            <CardContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 150 }}>
+                               <CircularProgress />
+                            </CardContent>
+                        </Card>
+                    </Grid>
                 )) : documents.map(doc => (
                     <Grid item xs={12} sm={6} md={4} key={doc.id}>
                         <Card onClick={() => onNavigateToDocument(doc.id)} sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', '&:hover': { boxShadow: 6 } }}>
@@ -341,6 +374,12 @@ const DashboardPage = ({ onNavigateToDocument }) => {
                     </Grid>
                 ))}
             </Grid>
+            {/* The Dashboard now calls the separate dialog component */}
+            <CreateDocumentDialog 
+                open={isCreateModalOpen} 
+                onClose={() => setIsCreateModalOpen(false)} 
+                onCreate={handleCreateDocument} 
+            />
         </>
     );
 };
@@ -480,7 +519,6 @@ const AnalyticsPage = () => {
                 <CardContent>
                     <Typography variant="h6" sx={{mb: 2}}>Documents Created Over Time</Typography>
                     <Box sx={{ height: 300 }}>
-                        {/* FIX: Corrected the closing tags for BarChart and ResponsiveContainer */}
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data.timeSeries}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -515,12 +553,18 @@ function App() {
   const { user, loading } = useAuth();
   const [page, setPage] = useState('login');
   const [appState, setAppState] = useState({ currentPage: 'dashboard', documentId: null });
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only on the client, preventing hydration mismatch.
+    setIsClient(true);
+  }, []);
 
   const handleNavigation = (targetPage, documentId = null) => {
     setAppState({ currentPage: targetPage, documentId: documentId });
   };
   
-  if (loading) {
+  if (!isClient || loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress size={60} /></Box>;
   }
 

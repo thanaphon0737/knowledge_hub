@@ -16,13 +16,13 @@ This project is a personal knowledge management system that uses AI to understan
 - [x] Set up Relational Database Schematic
 - [x] Configure `docker-compose.yml` for local development
 - [x] Create basic User Authentication API (Register/Login) in `main-backend`
-- [ ] Create basic UI for Login/Register/Dashboard in `frontend`
+- [x] Create basic UI for Login/Register/Dashboard in `frontend`
 
 ### Phase 2: MVP Core Logic (Week 2)
 - [x] **(Backend)** Create API for file uploads and enqueueing jobs
 - [x] **(AI Service)** Create Worker to consume jobs, perform OCR, and create embeddings
 - [x] **(AI Service)** Store vector embeddings in ChromaDB
-- [ ] **(Frontend)** Create UI for file uploads and status display
+- [x] **(Frontend)** Create UI for file uploads and status display
 - [x] **(Integration)** Implement end-to-end document upload flow
 
 ### Phase 3: RAG & Chat Interface (Week 3)

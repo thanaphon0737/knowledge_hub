@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { deleteSession } from "@/lib/session";
+import { idID } from "@mui/material/locale";
 // const apiClient = axios.create({
 //     baseURL: 'http://localhost:3000/api/v1',
 //     withCredentials: true,
@@ -49,7 +50,7 @@ export async function apiRegister(credentials: {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials:true
+        withCredentials: true,
       }
     );
     return result;
@@ -57,4 +58,56 @@ export async function apiRegister(credentials: {
     console.error(error);
     return null;
   }
+}
+
+export function apiGetDocuments() {
+  return axios.get("http://localhost:3000/api/v1/documents", {
+    withCredentials: true,
+  });
+}
+
+export function apiCreateDocuments(data: {
+  name: string;
+  description: string;
+}) {
+  return axios.post("http://localhost:3000/api/v1/documents", data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    withCredentials: true,
+  });
+}
+
+export function apiGetDocumentById(id: string) {
+  return axios.get(`http://localhost:3000/api/v1/documents/${id}`, {
+    withCredentials: true,
+  });
+}
+
+export function apiGetFileByDocumentId(id: string) {
+  return axios.get(
+    `http://localhost:3000/api/v1/documents/${id}/files`,
+    { withCredentials: true }
+  );
+}
+
+export function apiCreateFilewithPdf(documentId:string, file:File){
+  const formData = new FormData();
+  formData.append('file',file);
+  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/upload`,formData,{
+    headers: {
+
+      'Content-Type': 'multipart/form-data'
+    },
+    withCredentials:true
+  })
+}
+
+export function apiCreateFileWithUrl(documentId: string, sourceUrl:string){
+  const payload = {sourceUrl:sourceUrl}
+  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/url`,payload,{withCredentials:true})
+}
+
+export function apiQueryQuestion(question: string){
+  return axios.post(`http://localhost:3000/api/v1/query`,{question:question},{withCredentials:true})
 }

@@ -80,11 +80,13 @@
             - [x] GetFileByDocumentId
             - [x] UpdateFile
             - [x] DeleteFile
-        - [] implement ai-service call
+        - [x] implement ai-service call
             - [x] interface
             - [x] call ai-services
             - [x] implement webhook for trigger processing status
             - [x] api chat QA
+        - [] fix api for retrieve document
+        - [] fix api for handle return status when has no files in document
     - [x] Use proper HTTP methods (GET, POST, PUT, DELETE)
     - [ ] Document endpoints with OpenAPI/Swagger
 - [x] Implement input validation and error handling
