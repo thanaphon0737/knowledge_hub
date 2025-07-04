@@ -18,13 +18,23 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.access_token;
+  let token: string | undefined;
 
+  // const token = req.cookies.access_token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    console.log("Found token in Authorization header.");
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.access_token) {
+    console.log("Found token in cookie.");
+    token = req.cookies.access_token;
+  }
   if (!token) {
     res.status(401).json({ success: false, message: "No token provided" });
     return;
   }
-
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {

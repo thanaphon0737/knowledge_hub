@@ -95,7 +95,7 @@ function DocumentCard() {
             ))
           : documents.map((doc) => (
               <Grid key={doc.id}>
-                <Link href={`/dashboard/document/${doc.id}/edit`}>
+                <Link href={`/dashboard/document/${doc.id}`}>
                   <Card
                     sx={{
                       height: "100%",

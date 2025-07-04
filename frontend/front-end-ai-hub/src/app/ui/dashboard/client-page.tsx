@@ -7,7 +7,6 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
-  apiCreateFilewithPdf,
   apiGetDocumentById,
   apiGetFileByDocumentId,
   apiQueryQuestion,
@@ -15,10 +14,6 @@ import {
 import {
   Card,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   List,
   ListItem,
   ListItemIcon,
@@ -35,34 +30,42 @@ import {
   Link as LinkIcon,
 } from "@mui/icons-material";
 import UploadModal from "@/app/ui/dashboard/files/upload-modal";
-// The component function should not be async
-// The params prop is a plain object, not a promise
-function DocumentPageEdit({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params); // Destructure id directly from params
 
+type DocumentType = {
+  id: string;
+  name: string;
+  description?: string;
+  // Add other properties as needed
+};
+
+// Define a type for your file object
+type FileType = {
+  id: string;
+  file_name: string;
+  source_type: string;
+  processing_status: string;
+  // Add other properties as needed
+};
+interface DocumentClientPageProps {
+  documentId: string;
+  initialFiles: FileType[];
+}
+
+function DocumentDetailClientPage({
+  documentId,
+  initialFiles,
+}: DocumentClientPageProps) {
+  const id = documentId;
+  // The 'files' state is now initialized with data from the server.
   // Define a type for your document object
-  type DocumentType = {
-    id: string;
-    name: string;
-    description?: string;
-    // Add other properties as needed
-  };
 
   const [document, setDocument] = useState<DocumentType | null>(null);
-  // Define a type for your file object
-  type FileType = {
-    id: string;
-    file_name: string;
-    source_type: string;
-    processing_status: string;
-    // Add other properties as needed
-  };
-  const [files, setFiles] = useState<FileType[]>([]);
+  const [files, setFiles] = useState<FileType[]>(initialFiles);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [query,setQuery] = useState("");
-  const [answer,setAnswer] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState("");
   const fetchDetails = async () => {
     setLoading(true);
     try {
@@ -96,48 +99,67 @@ function DocumentPageEdit({ params }: { params: Promise<{ id: string }> }) {
 
     fetchDetails();
   }, [id]); // The dependency array ensures this effect runs again if the id changes
-
+  const handleUploadSuccess = () => {
+    console.log("New source added! Calling router.refresh()...");
+    // This now works as expected! It tells Next.js to re-run the
+    // parent Server Component, which re-fetches the data and passes
+    // the new 'initialFiles' prop down to this component.
+    router.refresh();
+  };
   // It's helpful to show a loading state to the user
   if (loading) {
     return <div>Loading document...</div>;
   }
 
-  async function handleUploadSuccess() {
-    console.log('New source added! Refreshing data...');
-    router.refresh();
-  }
-  async function handleQuery(e:any) {
+  async function handleQuery(e: any) {
     e.preventDefault();
-    try{
+    try {
       const result = await apiQueryQuestion(query);
-      console.log("answer from AI:", result)
-      setAnswer(result.data)
-      router.refresh()
-    }catch(err:any){
-      console.error(err)
+      console.log("answer from AI:", result);
+      setAnswer(result.data);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
     }
   }
+  type StatusChipProps = {
+    status: "READY" | "PROCESSING" | "ERROR" | "PENDING" | string;
+  };
+
+  const StatusChip = ({ status }: StatusChipProps) => {
+    const statusMap: Record<
+      "READY" | "PROCESSING" | "ERROR" | "PENDING",
+      {
+        label: string;
+        icon: React.ReactElement;
+        color: "success" | "warning" | "error" | "default";
+      }
+    > = {
+      READY: { label: "Ready", icon: <CheckCircle />, color: "success" },
+      PROCESSING: {
+        label: "Processing",
+        icon: <HourglassTop />,
+        color: "warning",
+      },
+      ERROR: { label: "Error", icon: <Error />, color: "error" },
+      PENDING: { label: "Pending", icon: <HourglassTop />, color: "default" },
+    };
+    const currentStatus =
+      statusMap[status as keyof typeof statusMap] || statusMap.PENDING;
+    return (
+      <Chip
+        icon={currentStatus.icon}
+        label={currentStatus.label}
+        color={currentStatus.color}
+        size="small"
+      />
+    );
+  };
   return (
     <>
       <Button onClick={() => router.back()} sx={{ mb: 2 }}>
         &larr; Back to Dashboard
       </Button>
-      <Box component="form" onSubmit={handleQuery}>
-      <TextField
-      id="query"
-      label="ask here ?"
-      name="query"
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      />
-      <Button type="submit" variant="contained">question</Button>
-      <Typography variant="h5" component="h1" fontWeight="bold">
-        answer
-      </Typography>
-      <Typography color="text.secondary">
-        <pre>{JSON.stringify(answer, null, 2)}</pre>
-      </Typography>
-      </Box>
       <Box
         sx={{
           display: "flex",
@@ -191,47 +213,13 @@ function DocumentPageEdit({ params }: { params: Promise<{ id: string }> }) {
           )}
         </List>
       </Card>
-      <UploadModal 
-      open={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      documentId={id}
-      onUploadSuccess={handleUploadSuccess}
+      <UploadModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        documentId={id}
+        onUploadSuccess={handleUploadSuccess}
       />
     </>
   );
 }
-
-type StatusChipProps = {
-  status: "READY" | "PROCESSING" | "ERROR" | "PENDING" | string;
-};
-
-const StatusChip = ({ status }: StatusChipProps) => {
-  const statusMap: Record<
-    "READY" | "PROCESSING" | "ERROR" | "PENDING",
-    {
-      label: string;
-      icon: React.ReactElement;
-      color: "success" | "warning" | "error" | "default";
-    }
-  > = {
-    READY: { label: "Ready", icon: <CheckCircle />, color: "success" },
-    PROCESSING: {
-      label: "Processing",
-      icon: <HourglassTop />,
-      color: "warning",
-    },
-    ERROR: { label: "Error", icon: <Error />, color: "error" },
-    PENDING: { label: "Pending", icon: <HourglassTop />, color: "default" },
-  };
-  const currentStatus =
-    statusMap[status as keyof typeof statusMap] || statusMap.PENDING;
-  return (
-    <Chip
-      icon={currentStatus.icon}
-      label={currentStatus.label}
-      color={currentStatus.color}
-      size="small"
-    />
-  );
-};
-export default DocumentPageEdit;
+export default DocumentDetailClientPage;
