@@ -5,7 +5,8 @@ import { cookies } from "next/headers";
 const serverApiClient = axios.create({
   // When running inside Docker, we use the internal service name.
   // When running locally, you might use http://localhost:3000
-  baseURL: "http://localhost:3000/api/v1",
+  // baseURL: "http://localhost:3000/api/v1",
+  baseURL:process.env.NEXT_PUBLIC_API_BACKEND_LOCAL
 });
 
 /**
