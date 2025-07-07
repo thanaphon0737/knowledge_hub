@@ -5,11 +5,12 @@ import { idID } from "@mui/material/locale";
 //     baseURL: 'http://localhost:3000/api/v1',
 //     withCredentials: true,
 // })
+const baseURL = process.env.NEXT_PUBLIC_API_BACKEND_LOCAL
 export const apiLogin = (credentials: { email: string; password: string }) => {
   try {
     // return apiClient.post('/auth/login',credentials)
     const result = axios.post(
-      "http://localhost:3000/api/v1/auth/login",
+      `${baseURL}/auth/login`,
       credentials,
       {
         headers: {
@@ -31,7 +32,7 @@ export const apiLogout = async () => {
 };
 
 export const apiGetProfile = () => {
-  const result = axios.get("http://localhost:3000/api/v1/user/me", {
+  const result = axios.get(`${baseURL}/user/me`, {
     withCredentials: true,
   });
   return result;
@@ -44,7 +45,7 @@ export async function apiRegister(credentials: {
 }): Promise<AxiosResponse | null> {
   try {
     const result = axios.post(
-      "http://localhost:3000/api/v1/auth/register",
+      `${baseURL}/auth/register`,
       credentials,
       {
         headers: {
@@ -61,7 +62,7 @@ export async function apiRegister(credentials: {
 }
 
 export function apiGetDocuments() {
-  return axios.get("http://localhost:3000/api/v1/documents", {
+  return axios.get(`${baseURL}/documents`, {
     withCredentials: true,
   });
 }
@@ -70,7 +71,7 @@ export function apiCreateDocuments(data: {
   name: string;
   description: string;
 }) {
-  return axios.post("http://localhost:3000/api/v1/documents", data, {
+  return axios.post(`${baseURL}/documents`, data, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -79,14 +80,14 @@ export function apiCreateDocuments(data: {
 }
 
 export function apiGetDocumentById(id: string) {
-  return axios.get(`http://localhost:3000/api/v1/documents/${id}`, {
+  return axios.get(`${baseURL}/documents/${id}`, {
     withCredentials: true,
   });
 }
 
 export function apiGetFileByDocumentId(id: string) {
   return axios.get(
-    `http://localhost:3000/api/v1/documents/${id}/files`,
+    `${baseURL}/documents/${id}/files`,
     { withCredentials: true }
   );
 }
@@ -94,7 +95,7 @@ export function apiGetFileByDocumentId(id: string) {
 export function apiCreateFilewithPdf(documentId:string, file:File){
   const formData = new FormData();
   formData.append('file',file);
-  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/upload`,formData,{
+  return axios.post(`${baseURL}/documents/${documentId}/files/upload`,formData,{
     headers: {
 
       'Content-Type': 'multipart/form-data'
@@ -105,9 +106,9 @@ export function apiCreateFilewithPdf(documentId:string, file:File){
 
 export function apiCreateFileWithUrl(documentId: string, sourceUrl:string){
   const payload = {sourceUrl:sourceUrl}
-  return axios.post(`http://localhost:3000/api/v1/documents/${documentId}/files/url`,payload,{withCredentials:true})
+  return axios.post(`${baseURL}/documents/${documentId}/files/url`,payload,{withCredentials:true})
 }
 
 export function apiQueryQuestion(question: string){
-  return axios.post(`http://localhost:3000/api/v1/query`,{question:question},{withCredentials:true})
+  return axios.post(`${baseURL}/query`,{question:question},{withCredentials:true})
 }
