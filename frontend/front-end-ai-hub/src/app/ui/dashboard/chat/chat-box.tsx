@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -6,7 +7,7 @@ import Box from "@mui/material/Box";
 
 import { apiQueryQuestion } from "@/services/api";
 import { TextField, Typography } from "@mui/material";
-function chatBox() {
+function ChatBox() {
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
   async function handleQuery(e: any) {
@@ -43,4 +44,4 @@ function chatBox() {
     </>
   );
 }
-export default chatBox;
+export default ChatBox;
