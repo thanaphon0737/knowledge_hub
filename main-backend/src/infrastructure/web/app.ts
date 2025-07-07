@@ -6,7 +6,8 @@ const app: Application = express();
 
 const corsOption = {
 
-    origin: 'http://localhost:3001',
+    // origin: 'http://localhost:3001',
+    origin: ['http://localhost:3001','https://b2hwc5zg-3001.asse.devtunnels.ms'],
     credentials: true,
 }
 

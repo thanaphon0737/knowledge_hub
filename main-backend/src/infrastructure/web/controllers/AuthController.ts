@@ -1,4 +1,5 @@
 import { Request, Response, RequestHandler } from "express";
+import { CookieOptions } from "express";
 import { RegisterUserUseCase } from "../../../application/use-cases/auth/RegisterUser.usecase";
 import { PostgresUserRepository } from "../../database/postgres/PostgresUserRepository";
 import { UserResponseDto } from "../../../application/dtos/user.dto";
@@ -22,14 +23,25 @@ export const register: RequestHandler = async (req, res) => {
   try {
     // สร้างและเรียกใช้ RegisterUserUseCase
     const registerUserUseCase = new RegisterUserUseCase(userRepository);
-    const {user,token} = await registerUserUseCase.execute(email, password);
+    const { user, token } = await registerUserUseCase.execute(email, password);
     //adding set for set cookie
-    res.cookie('access_token',token, {
-      httpOnly:true,
-      secure: false, // for dev
-      sameSite: 'strict',
-      maxAge: 60 *60*1000 // 1hr
-    })
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+    };
+
+    if (process.env.NODE_ENV === "production") {
+      cookieOptions.secure = true;
+      cookieOptions.sameSite = "strict"; // Or 'lax' depending on your needs
+      // You might also need to set the domain explicitly for your production site
+      // cookieOptions.domain = 'your-production-domain.com';
+    } else {
+      // For development (including tunnels), we need a more relaxed policy.
+      cookieOptions.secure = false; // Because dev tunnels are often not HTTPS locally
+      cookieOptions.sameSite = "lax"; // 'lax' is required for cross-domain cookies to be sent
+    }
+    // --- Set the cookie with the dynamic options ---
+    res.cookie("access_token", token, cookieOptions);
     // แปลงข้อมูล User เป็น DTO (Data Transfer Object) เพื่อส่งกลับ
     const userResponse: UserResponseDto = {
       id: user.id,
@@ -55,19 +67,29 @@ export const login: RequestHandler = async (req, res) => {
   try {
     // สร้างและเรียกใช้ LoginUserUseCase
     const loginUserUseCase = new LoginUserUseCase(userRepository);
-    const  token  = await loginUserUseCase.execute(email, password);
-    if(!token) {
+    const token = await loginUserUseCase.execute(email, password);
+    if (!token) {
       res.status(401).json({ success: false, message: "Invalid credentials" });
-        return;
+      return;
     }
-    res.cookie("access_token", token, {
-      httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
-      // secure: process.env.NODE_ENV === "production", // ใช้ secure cookie ใน production
-      secure: false,
-      sameSite: "strict", // ป้องกัน CSRF
-      maxAge: 3600000, // กำหนดอายุของ cookie เป็น 1 ชั่วโมง
-    });
-    
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+    };
+
+    if (process.env.NODE_ENV === "production") {
+      cookieOptions.secure = true;
+      cookieOptions.sameSite = "none"; // Or 'lax' depending on your needs
+      // You might also need to set the domain explicitly for your production site
+      // cookieOptions.domain = 'your-production-domain.com';
+    } else {
+      // For development (including tunnels), we need a more relaxed policy.
+      cookieOptions.secure = false; // Because dev tunnels are often not HTTPS locally
+      cookieOptions.sameSite = "lax"; // 'lax' is required for cross-domain cookies to be sent
+    }
+    // --- Set the cookie with the dynamic options ---
+    res.cookie("access_token", token, cookieOptions);
+
     // ส่ง Token กลับไป
     res.status(200).json({ success: true, token });
   } catch (error: any) {
