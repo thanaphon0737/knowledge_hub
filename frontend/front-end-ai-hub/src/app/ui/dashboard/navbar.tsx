@@ -14,7 +14,8 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import Link from "next/link";
-
+import { useAuth } from "@/context/AuthContext";
+import {useRouter} from "next/navigation";
 const pages = ["Dashboard", "Chat", "Blog"];
 const routes = ["dashboard", "dashboard/chat", ""];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
@@ -26,7 +27,8 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );
-
+  const {logout } = useAuth();
+  const router = useRouter();
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -38,7 +40,18 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = async (e: React.MouseEvent<HTMLElement>) => {
+    console.log(e.currentTarget.textContent)
+    const getSetting = e.currentTarget.textContent
+    if(getSetting?.toLowerCase() === 'logout'){
+      try{
+            await logout();
+
+            router.push('/login');
+        }catch(err: any){
+            console.error('Failed to logout', err)
+        }
+    }
     setAnchorElUser(null);
   };
 
@@ -124,7 +137,7 @@ function ResponsiveAppBar() {
             {pages.map((page,index) => (
               <Link href={`/${routes[index].toLocaleLowerCase()}`}>
               <Button
-                key={page}
+                key={index}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}
                 >
