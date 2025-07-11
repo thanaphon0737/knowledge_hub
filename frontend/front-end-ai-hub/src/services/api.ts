@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import { deleteSession } from "@/lib/session";
-import { idID } from "@mui/material/locale";
 // const apiClient = axios.create({
 //     baseURL: 'http://localhost:3000/api/v1',
 //     withCredentials: true,
