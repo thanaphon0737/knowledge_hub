@@ -75,7 +75,7 @@ class VectorStoreService:
             print(f'Peeking at collection... Founded {len(data["ids"])} documents.')
 
             formatted_docs = []
-            print(data)
+            # print(data)
             for i in range(len(data['ids'])):
                 formatted_docs.append({
                     "id": data['ids'][i],

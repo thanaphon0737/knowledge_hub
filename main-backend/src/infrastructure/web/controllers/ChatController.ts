@@ -6,7 +6,7 @@ const AI_SERVICE_URL_QUERY_URL = process.env.AI_SERVICE_URL_QUERY_URL;
 
 export const handleUserQuery: RequestHandler = async (req, res) => {
   const user = req.user;
-  const { question, document_ids } = req.body;
+  const { question, document_id } = req.body;
   if (!user) {
     res.status(401).json({ message: "Unauthorize" });
     return;
@@ -26,6 +26,7 @@ export const handleUserQuery: RequestHandler = async (req, res) => {
 
     const aiResponse = await axios.post(AI_SERVICE_URL_QUERY_URL, {
       user_id: user.id,
+      document_id: document_id,
       question: question,
     //   document_ids: document_ids,
     });

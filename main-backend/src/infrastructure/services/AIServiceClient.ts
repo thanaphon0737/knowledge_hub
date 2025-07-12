@@ -7,6 +7,7 @@ export class AIServiceClient implements IProcessingService {
   public async startProcessing(fileInfo: {
     fileId: string;
     userId: string;
+    documentId: string;
     sourceType: string;
     sourceLocation: string;
   }): Promise<void> {
@@ -17,6 +18,7 @@ export class AIServiceClient implements IProcessingService {
       const result = await axios.post(`${AI_SERVICE_URL}/api/v1/process`, {
         file_id: fileInfo.fileId,
         user_id: fileInfo.userId,
+        document_id: fileInfo.documentId,
         source_type: fileInfo.sourceType,
         source_location: fileInfo.sourceLocation,
         webhook_url: WEBHOOK_URL

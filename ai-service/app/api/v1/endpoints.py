@@ -28,21 +28,22 @@ async def process_document(
     
     try:
         await processing_pipeline.execute(
-            file_id=process_request.file_id,
-            user_id=process_request.user_id,
-            source_type=process_request.source_type,
-            source_location=process_request.source_location,
-            webhook_url=process_request.webhook_url
+            file_id = process_request.file_id,
+            user_id = process_request.user_id,
+            document_id = process_request.document_id,
+            source_type = process_request.source_type,
+            source_location = process_request.source_location,
+            webhook_url = process_request.webhook_url
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing document: {str(e)}"
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail = f"Error processing document: {str(e)}"
         )
     return api_model.ProcessResponse(
-        status="processing_initiated",
-        message="Document processing has been initiated.",
-        file_id=process_request.file_id
+        status = "processing_initiated",
+        message = "Document processing has been initiated.",
+        file_id = process_request.file_id
     )
     
 @router.post("/query",
@@ -57,8 +58,9 @@ async def query_document(
     
     try:
         result = await rag_pipeline.get_answer(
-            user_id=query_request.user_id,
-            question=query_request.question,
+            user_id = query_request.user_id,
+            document_id = query_request.document_id,
+            question = query_request.question,
         )
         # print(f"Query result: {result}")
         return api_model.QueryResponse(
@@ -67,7 +69,7 @@ async def query_document(
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error querying document: {str(e)}"
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail = f"Error querying document: {str(e)}"
         )
         

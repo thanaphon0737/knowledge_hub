@@ -67,6 +67,7 @@ export class CreateFileUseCase {
     const fileInfo = {
       fileId: file.id,
       userId: userId,
+      document_id: documentId,
       sourceType: file.source_type,
       sourceLocation: file.source_location,
     };

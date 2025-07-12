@@ -24,7 +24,8 @@ class ProcessingPipeline:
         self,
         chunks: List[Document],
         file_id: str,
-        user_id: str
+        user_id: str,
+        document_id: str
     ) -> Tuple[List[Document], List[str]]:
         """        Prepares lists of IDs, metadatas, and document contents from chunks.
         """
@@ -36,24 +37,27 @@ class ProcessingPipeline:
             
             chunk.metadata['file_id'] = file_id
             chunk.metadata['user_id'] = user_id
+            chunk.metadata['document_id'] = document_id
             chunk.metadata['chunk_number'] = i
+            
             
         return chunks, ids
             
-    async def execute(self, file_id: str, user_id: str, source_type: str, source_location: str,webhook_url: Optional[str]):
+    async def execute(self, file_id: str, user_id: str,document_id:str, source_type: str, source_location: str,webhook_url: Optional[str]):
         status_to_report = 'READY'
         error_msg = None
         try:
         
             print(f"Processing pipeline started for file_id: {file_id}")
-            
+            print(f'Processing pipeline started for document_id: {document_id}')
+            print(f'Processing pipeline started for user_id: {user_id}')
             # in future need process image file
             
             loaded_docs = load_from_source(source_type, source_location)
             
             chunks = self.text_splitter.split_documents(loaded_docs)
             
-            prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id)
+            prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id,document_id)
             
             self.vector_store_service.upsert_documents(
                 documents=prepared_docs,
@@ -61,7 +65,7 @@ class ProcessingPipeline:
             )
             
             print(f'Processing pipeline finished for file_id: {file_id}')
-
+            print(self.vector_store_service.peek_collection())
             
         except Exception as e:
             status_to_report = 'ERROR'
@@ -147,10 +151,10 @@ class RagPipeline:
         """
         return prompt_template.strip()
 
-    async def get_answer(self, user_id: str, question: str) -> Dict[str, Any]:
+    async def get_answer(self, user_id: str,document_id: str, question: str) -> Dict[str, Any]:
         
         # first step retrieval k=10
-        retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {"user_id": user_id}})
+        retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {'$and':[{"user_id": {'$eq':user_id}},{"document_id":{'$eq':document_id}}]}})
         
         
         retrieved_docs = retriever.invoke(question)
