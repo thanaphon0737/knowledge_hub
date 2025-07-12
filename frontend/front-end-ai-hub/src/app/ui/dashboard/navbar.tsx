@@ -14,8 +14,10 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+
 import {useRouter} from "next/navigation";
+import { useTransition } from 'react';
+import { logoutAction } from '@/app/actions';
 const pages = ["Dashboard", "Chat", "Blog"];
 const routes = ["dashboard", "dashboard/chat", ""];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
@@ -27,8 +29,8 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );
-  const {logout } = useAuth();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -40,20 +42,27 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = async (e: React.MouseEvent<HTMLElement>) => {
-    console.log(e.currentTarget.textContent)
-    const getSetting = e.currentTarget.textContent
-    if(getSetting?.toLowerCase() === 'logout'){
-      try{
-            await logout();
-
-            router.push('/login');
-        }catch(err: any){
-            console.error('Failed to logout', err)
-        }
-    }
+  const handleCloseUserMenu = async (setting:string) => {
+    
     setAnchorElUser(null);
+    switch (setting) {
+    case 'Profile':
+      router.push('/profile');
+      break;
+    case 'Account':
+      router.push('/account');
+      break;
+    case 'Logout':
+      // Use startTransition for server actions to avoid blocking the UI
+      startTransition(() => {
+        logoutAction();
+      });
+      break;
+    default:
+      // Optional: handle other cases or do nothing
+      break;
   };
+  }
 
   return (
     <AppBar position="static">
@@ -106,8 +115,8 @@ function ResponsiveAppBar() {
               sx={{ display: { xs: "block", md: "none" } }}
             >
               {pages.map((page, index) => (
-                <Link href={`/${routes[index].toLocaleLowerCase()}`}>
-                  <MenuItem key={page} onClick={handleCloseNavMenu}>
+                <Link key={page} href={`/${routes[index].toLocaleLowerCase()}`}>
+                  <MenuItem  onClick={handleCloseNavMenu}>
                     <Typography sx={{ textAlign: "center" }}>{page}</Typography>
                   </MenuItem>
                 </Link>
@@ -135,9 +144,9 @@ function ResponsiveAppBar() {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page,index) => (
-              <Link href={`/${routes[index].toLocaleLowerCase()}`}>
+              <Link key={page} href={`/${routes[index].toLocaleLowerCase()}`}>
               <Button
-                key={index}
+                
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}
                 >
@@ -169,7 +178,7 @@ function ResponsiveAppBar() {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={() => {handleCloseUserMenu(setting)}}>
                   <Typography sx={{ textAlign: "center" }}>
                     {setting}
                   </Typography>
@@ -182,4 +191,5 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
+
 export default ResponsiveAppBar;
