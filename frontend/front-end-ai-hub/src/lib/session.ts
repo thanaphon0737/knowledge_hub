@@ -11,7 +11,7 @@ interface UserPayload {
 export async function getCurrentUser(): Promise<UserPayload | null > {
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
-    console.log('session ', token)
+    
     if(!token) {
         return null;
     }
