@@ -9,11 +9,13 @@ type Message = {
     sources?: any[];
 };
 
-export default function ChatInteract(){
+
+export default function ChatInteract({ documentId }: { documentId: string }){
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const chatEndRef = useRef<HTMLDivElement | null>(null);
+    
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -23,7 +25,8 @@ export default function ChatInteract(){
         setInput('');
         setLoading(true);
         try {
-            const result = await apiQueryQuestion(input);
+            console.log(`input: ${input}, doc_id: ${documentId}`)
+            const result = await apiQueryQuestion(input,documentId);
             const aiMessage: Message = { role: 'ai', content: result.data.answer, sources: result.data.sources };
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {

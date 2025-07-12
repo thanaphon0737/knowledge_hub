@@ -12,14 +12,14 @@ function ChatBox() {
   const [answer, setAnswer] = useState("");
   async function handleQuery(e: any) {
     e.preventDefault();
-    try {
-      const result = await apiQueryQuestion(query);
-      console.log("answer from AI:", result);
-      setAnswer(result.data);
+    // try {
+    //   const result = await apiQueryQuestion(query);
+    //   console.log("answer from AI:", result);
+    //   setAnswer(result.data);
       
-    } catch (err: any) {
-      console.error(err);
-    }
+    // } catch (err: any) {
+    //   console.error(err);
+    // }
   }
   return (
     <>

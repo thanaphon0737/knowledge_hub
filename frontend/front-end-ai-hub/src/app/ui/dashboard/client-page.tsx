@@ -30,6 +30,7 @@ import {
   Link as LinkIcon,
 } from "@mui/icons-material";
 import UploadModal from "@/app/ui/dashboard/files/upload-modal";
+import ChatInteract from "./chat/chat-interactive";
 
 
 type DocumentType = {
@@ -143,17 +144,17 @@ function DocumentDetailClientPage({
     return <div>Loading document...</div>;
   }
 
-  async function handleQuery(e: any) {
-    e.preventDefault();
-    try {
-      const result = await apiQueryQuestion(query);
-      console.log("answer from AI:", result);
-      setAnswer(result.data);
-      router.refresh();
-    } catch (err: any) {
-      console.error(err);
-    }
-  }
+  // async function handleQuery(e: any) {
+  //   e.preventDefault();
+  //   try {
+  //     const result = await apiQueryQuestion(query);
+  //     console.log("answer from AI:", result);
+  //     setAnswer(result.data);
+  //     router.refresh();
+  //   } catch (err: any) {
+  //     console.error(err);
+  //   }
+  // }
   type StatusChipProps = {
     status: "READY" | "PROCESSING" | "ERROR" | "PENDING" | string;
   };
@@ -245,6 +246,7 @@ function DocumentDetailClientPage({
           )}
         </List>
       </Card>
+      <ChatInteract documentId={documentId}/>
       <UploadModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
