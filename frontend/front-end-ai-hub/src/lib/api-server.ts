@@ -6,7 +6,7 @@ const serverApiClient = axios.create({
   // When running inside Docker, we use the internal service name.
   // When running locally, you might use http://localhost:3000
   // baseURL: "http://localhost:3000/api/v1",
-  baseURL:process.env.NEXT_PUBLIC_API_BACKEND_LOCAL
+  baseURL: process.env.NEXT_PUBLIC_API_BACKEND_LOCAL,
 });
 
 /**
@@ -37,13 +37,17 @@ export async function apiGetDocumentServer(id: string) {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       // Log more specific details on the server for easier debugging.
-      console.error("Server-side API call failed:", {
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      
       if (error.response?.status === 401) {
         // The token might be invalid or expired
         console.error("Server-side auth error: Invalid token");
+      }else if (error.response?.status == 404) {
+        console.log("File not created yet, which is okay.");
+      } else {
+        console.error("Server-side API call failed:", {
+          status: error.response?.status,
+          data: error.response?.data,
+        });
       }
     }
     // Re-throw the error to be caught by error.tsx or notFound()
@@ -68,18 +72,23 @@ export async function apiGetFilesServer(id: string) {
 
   // 3. Make the API call, passing the custom headers.
   try {
-    const response = await serverApiClient.get(`/documents/${id}/files`, { headers });
+    const response = await serverApiClient.get(`/documents/${id}/files`, {
+      headers,
+    });
     return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       // Log more specific details on the server for easier debugging.
-      console.error("Server-side API call failed:", {
-        status: error.response?.status,
-        data: error.response?.data,
-      });
       if (error.response?.status === 401) {
         // The token might be invalid or expired
         console.error("Server-side auth error: Invalid token");
+      } else if (error.response?.status == 404) {
+        console.log("File not created yet, which is okay.");
+      } else {
+        console.error("Server-side API call failed:", {
+          status: error.response?.status,
+          data: error.response?.data,
+        });
       }
     }
     // Re-throw the error to be caught by error.tsx or notFound()

@@ -48,8 +48,8 @@ type FileType = {
 };
 interface DocumentClientPageProps {
   documentId: string;
-  initialDoc: DocumentType|null;
-  initialFiles: FileType[]|null;
+  initialDoc: DocumentType | null;
+  initialFiles: FileType[] | null;
 }
 
 function DocumentDetailClientPage({
@@ -62,7 +62,7 @@ function DocumentDetailClientPage({
   // Define a type for your document object
 
   const [document, setDocument] = useState<DocumentType | null>(initialDoc);
-  const [files, setFiles] = useState<FileType[]|null>(initialFiles);
+  const [files, setFiles] = useState<FileType[] | null>(initialFiles);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,28 +70,55 @@ function DocumentDetailClientPage({
   const [answer, setAnswer] = useState("");
   const fetchDetails = async () => {
     setLoading(true);
-    try {
-      // const docResponse = await apiGetDocumentById(id);
-      // const filesResponse = await apiGetFileByDocumentId(id);
-      const promises = [apiGetDocumentById(id), apiGetFileByDocumentId(id)];
-      const result = await Promise.allSettled(promises);
-      if (result[0].status === "fulfilled") {
-        setDocument(result[0].value.data.data);
-      } else {
-        console.error("Failed to fetch document:", result[0].reason);
-      }
+    // const docResponse = await apiGetDocumentById(id);
+    // const filesResponse = await apiGetFileByDocumentId(id);
+    const promises = [apiGetDocumentById(id), apiGetFileByDocumentId(id)];
+    const result = await Promise.allSettled(promises);
+    if (result[0].status === "fulfilled") {
+      setDocument(result[0].value.data.data);
+    } else {
+      const reason = result[0].reason;
 
-      if (result[1].status === "fulfilled") {
-        setFiles(result[1].value.data.data);
+      // Check if the rejection was a 404 "Not Found" error
+      if (reason.response && reason.response.status === 404) {
+        // This is the expected "file not found" case.
+        // We handle it gracefully by setting state to null and NOT showing an error.
+        console.log("Document not created yet, which is okay.");
+        setFiles(null); // Or setFiles([]) depending on your preference
       } else {
-        console.error("Failed to fetch files:", result[1].reason);
+        // This is a different, unexpected error (e.g., server error 500)
+        // Now you can show an error message.
+        console.error(
+          "An unexpected error occurred while fetching Documents:",
+          reason
+        );
+        // setError('Failed to load file resources.');
       }
-    } catch (error) {
-      console.error("Failed to fetch document details", error);
-      // Handle error state here, e.g., show a notification
-    } finally {
-      setLoading(false);
     }
+
+    if (result[1].status === "fulfilled") {
+      setFiles(result[1].value.data.data);
+    } else {
+      const reason = result[1].reason;
+
+      // Check if the rejection was a 404 "Not Found" error
+      if (reason.response && reason.response.status === 404) {
+        // This is the expected "file not found" case.
+        // We handle it gracefully by setting state to null and NOT showing an error.
+        console.log("File not created yet, which is okay.");
+        setFiles(null); // Or setFiles([]) depending on your preference
+      } else {
+        // This is a different, unexpected error (e.g., server error 500)
+        // Now you can show an error message.
+        console.error(
+          "An unexpected error occurred while fetching files:",
+          reason
+        );
+        // setError('Failed to load file resources.');
+      }
+    }
+
+    setLoading(false);
   };
   useEffect(() => {
     // If there's no id, don't try to fetch
@@ -100,7 +127,7 @@ function DocumentDetailClientPage({
     // Define the async data fetching function inside useEffect
 
     fetchDetails();
-  }, [id,initialFiles]); // The dependency array ensures this effect runs again if the id changes
+  }, [id, initialFiles]); // The dependency array ensures this effect runs again if the id changes
   const handleUploadSuccess = () => {
     console.log("New source added! Calling router.refresh()...");
     // This now works as expected! It tells Next.js to re-run the
