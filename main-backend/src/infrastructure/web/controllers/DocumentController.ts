@@ -111,6 +111,7 @@ export const getDocuments: RequestHandler = async (req, res) => {
       updated_at: doc.updated_at,
     }));
     res.status(200).json({ success: true, data: documentsResponse });
+    return
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
     return;

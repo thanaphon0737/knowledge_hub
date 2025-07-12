@@ -11,9 +11,7 @@ export class GetDocuments {
   async execute(userId: string): Promise<Document[] | null> {
     // Fetch the document by ID and user ID
     const documents = await this.documentRepository.findAllByUserId(userId);
-    if (!documents || documents.length === 0) {
-      throw new Error("Document not found for the user");
-    }
+    
     // Return the found document or null if not found
     return documents;
   }
