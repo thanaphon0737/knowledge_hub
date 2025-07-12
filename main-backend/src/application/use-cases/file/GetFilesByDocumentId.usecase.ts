@@ -9,9 +9,7 @@ export class GetFileByDocumentIdUseCase{
 
     async execute(document_id: string): Promise<File[]> {
         const file = await this.fileRepository.findByDocumentId(document_id);
-        if(!file){
-            throw new Error("File not found")
-        }
+        
 
         return file;
     }

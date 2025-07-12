@@ -197,7 +197,7 @@ export const getFileByDocumentId: RequestHandler = async (req, res) => {
     );
     const files = await getFileByDocumentIdUseCase.execute(documentId);
     if (files.length === 0) {
-      res.status(400).json({ success: false, message: "can not get files" });
+      res.status(404).json({ success: false, message: "can not get files" });
       return;
     }
     const FilesResponse: FileResponseDto[] = files.map((file) => ({
@@ -213,8 +213,9 @@ export const getFileByDocumentId: RequestHandler = async (req, res) => {
       updated_at: file?.updated_at,
     }));
     res.status(200).json({ success: true, data: FilesResponse });
+    return
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

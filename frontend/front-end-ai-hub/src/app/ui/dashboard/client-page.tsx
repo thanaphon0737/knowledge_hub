@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import UploadModal from "@/app/ui/dashboard/files/upload-modal";
 
+
 type DocumentType = {
   id: string;
   name: string;
@@ -92,6 +93,7 @@ function DocumentDetailClientPage({
           "An unexpected error occurred while fetching Documents:",
           reason
         );
+        throw reason;
         // setError('Failed to load file resources.');
       }
     }
@@ -114,6 +116,7 @@ function DocumentDetailClientPage({
           "An unexpected error occurred while fetching files:",
           reason
         );
+        throw reason;
         // setError('Failed to load file resources.');
       }
     }
