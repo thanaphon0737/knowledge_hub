@@ -2,7 +2,7 @@
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { getCurrentUser } from "@/lib/session";
-
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 
 export default async function RootLayout({
@@ -16,10 +16,13 @@ export default async function RootLayout({
       <body
         
       >
+        <AppRouterCacheProvider>
+
         <AuthProvider initialUser={initialUser}>
 
         {children}
         </AuthProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

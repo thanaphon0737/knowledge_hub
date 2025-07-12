@@ -36,19 +36,20 @@ export const AuthProvider = ({
   const login = async (credentials: {email: string, password: string}) => {
     try{
 
-        await apiLogin(credentials);
+        const response = await apiLogin(credentials);
         
-        const response = await apiGetProfile();
-        const userProfile = response.data.data;
+        const userProfile = response?.data.data;
+        
 
         setUser(userProfile)
     }catch(err: any){
         console.error(err)
+        throw err
     }
   };
 
   const logout = async () => {
-    await apiLogout();
+    
     setUser(null);
   };
 
