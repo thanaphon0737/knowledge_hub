@@ -1,12 +1,11 @@
 import { RequestHandler } from "express";
 import axios from "axios";
 import "dotenv/config";
-import { stat } from "fs";
 const AI_SERVICE_URL_QUERY_URL = process.env.AI_SERVICE_URL_QUERY_URL;
 
 export const handleUserQuery: RequestHandler = async (req, res) => {
   const user = req.user;
-  const { question, document_id } = req.body;
+  const { question, documentId } = req.body;
   if (!user) {
     res.status(401).json({ message: "Unauthorize" });
     return;
@@ -15,18 +14,20 @@ export const handleUserQuery: RequestHandler = async (req, res) => {
     res.status(400).json({ success: false, message: "Question is required." });
     return;
   }
-
+  if(!documentId){
+    res.status(404).json({success: false, message: "documentId not found."})
+  }
   if (!AI_SERVICE_URL_QUERY_URL) {
     res.status(500).json({ success: false, message: "AI service URL is not configured." });
     return;
   }
-
+  console.log(`frontend body send for query: ${req.body.question} ${req.body.document_id}`)
   try {
     console.log(`Forwarding query to AI service for user: ${user.id}`);
-
+    
     const aiResponse = await axios.post(AI_SERVICE_URL_QUERY_URL, {
       user_id: user.id,
-      document_id: document_id,
+      document_id: documentId,
       question: question,
     //   document_ids: document_ids,
     });

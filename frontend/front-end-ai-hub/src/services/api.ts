@@ -54,6 +54,6 @@ export function apiCreateFileWithUrl(documentId: string, sourceUrl:string){
   return apiClient.post(`/documents/${documentId}/files/url`,payload)
 }
 
-export function apiQueryQuestion(question: string){
-  return apiClient.post(`/query`,{question:question})
+export function apiQueryQuestion(question:string,documentId:string){
+  return apiClient.post(`/query`,{question:question,documentId:documentId})
 }

@@ -5,7 +5,7 @@ export default function ChatPage() {
   return (
     <>
       {/* <ChatBox /> */}
-      <ChatInteract/>
+      {/* <ChatInteract documentId={}/> */}
     </>
   );
 }
