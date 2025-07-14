@@ -8,3 +8,5 @@ __pycache__/
 chroma_langchain_db/
 chroma_test_db/
 vector_store_db/
+
+.coverage

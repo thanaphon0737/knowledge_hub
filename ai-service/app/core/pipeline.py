@@ -46,19 +46,20 @@ class ProcessingPipeline:
         status_to_report = 'READY'
         error_msg = None
         try:
-        
+            
             print(f"Processing pipeline started for file_id: {file_id}")
             print(f'Processing pipeline started for document_id: {document_id}')
             print(f'Processing pipeline started for user_id: {user_id}')
             # in future need process image file
             
-            loaded_docs = await load_from_source(source_type, source_location)
+            loaded_docs =  load_from_source(source_type, source_location)
+            if(len(loaded_docs) ==0):
+                return None
+            chunks =  self.text_splitter.split_documents(loaded_docs)
             
-            chunks = await self.text_splitter.split_documents(loaded_docs)
+            prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id,document_id)
             
-            prepared_docs, doc_ids = await self._prepare_documents_for_store(chunks, file_id, user_id,document_id)
-            
-            await self.vector_store_service.upsert_documents(
+            self.vector_store_service.upsert_documents(
                 documents=prepared_docs,
                 ids=doc_ids,
             )
