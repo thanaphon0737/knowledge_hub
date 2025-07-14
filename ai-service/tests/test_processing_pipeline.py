@@ -58,54 +58,82 @@ class TestProcessingPipelineScenarios:
     # ❌ 2. Error Cases
     # --------------------------------------------------
     
-    # @pytest.mark.parametrize("error_step, mock_target, error_to_raise", [
-    #     ("load", 'app.core.pipeline.load_from_source', FileNotFoundError("File not found")),
-    #     ("split", 'app.core.pipeline.text_splitter.split_documents', ValueError("Splitting failed")),
-    #     ("upsert", 'app.core.vector_store.vector_store_service.upsert_documents', RuntimeError("DB connection failed"))
-    # ])
-    # async def test_pipeline_failures_at_various_steps(self, mocker, httpx_mock, error_step, mock_target, error_to_raise):
-    #     """ทดสอบ: Pipeline ล้มเหลวที่ขั้นตอนต่างๆ และส่ง Webhook แจ้ง Error"""
-    #     # ARRANGE
-    #     # Mock step ก่อนหน้าให้สำเร็จ
-    #     if error_step != "load":
-    #         mocker.patch('app.core.document_loader.load_from_source', return_value=[])
+    async def test_failure_on_document_loading(self, mocker, httpx_mock):
+        """ทดสอบ: กรณีที่เกิด Error ตอนโหลดเอกสาร (load_from_source)"""
+        # ARRANGE
+        # ทำให้ขั้นตอนแรกสุดเกิด Error
+        error_message = "File does not exist"
+        mocker.patch('app.core.pipeline.load_from_source', side_effect=FileNotFoundError(error_message))
         
-    #     # ทำให้ step ที่ต้องการทดสอบเกิด Error
-    #     mocker.patch(mock_target, side_effect=error_to_raise)
+        webhook_url = "http://fake-webhook.com/error-loading"
+        httpx_mock.add_response(url=webhook_url)
+        pipeline = ProcessingPipeline(MagicMock(), MagicMock(), MagicMock())
+
+        # ACT
+        await pipeline.execute("f", "u", "d", "s", "l", webhook_url)
+
+        # ASSERT
+        requests = httpx_mock.get_requests()
+        assert len(requests) == 1
+        payload = json.loads(requests[0].content)
+        assert payload["status"] == "ERROR"
+        assert payload["errorMessage"] == error_message
+
+    async def test_failure_on_text_splitting(self, mocker, httpx_mock):
+        """ทดสอบ: กรณีที่เกิด Error ตอนตัดข้อความ (split_documents)"""
+        # ARRANGE
+        # Mock step ก่อนหน้าให้สำเร็จ
+        mocker.patch('app.core.pipeline.load_from_source', return_value=[Document(page_content="doc")])
         
-    #     webhook_url = "http://fake-webhook.com/error"
-    #     httpx_mock.add_response(url=webhook_url)
-    #     pipeline = ProcessingPipeline(MagicMock(), MagicMock(), MagicMock())
+        # ทำให้ขั้นตอน text splitting เกิด Error
         
-    #     # ACT
-    #     await pipeline.execute("f", "u", "d", "s", "l", webhook_url)
-
-    #     # ASSERT
-    #     requests = httpx_mock.get_requests()
-    #     assert len(requests) == 1
-    #     payload = json.loads(requests[0].content)
-    #     assert payload["status"] == "ERROR"
-    #     assert str(error_to_raise) in payload["errorMessage"]
-
-    # async def test_webhook_callback_failure(self, mocker, httpx_mock, capsys):
-    #     """ทดสอบ: กรณีที่ยิง Webhook กลับไปแล้วฝั่งปลายทางล่ม"""
-    #     # ARRANGE
-    #     mocker.patch('app.core.pipeline.load_from_source', return_value=[])
-    #     # จำลองว่า Webhook server ตอบกลับมาด้วย status 500 (Internal Server Error)
-    #     webhook_url = "http://fake-webhook.com/fatal"
-    #     httpx_mock.add_response(url=webhook_url, status_code=500)
+        pipeline = ProcessingPipeline(MagicMock(), MagicMock(), MagicMock())
         
-    #     pipeline = ProcessingPipeline(MagicMock(), MagicMock(), MagicMock())
+        error_message = "Splitting failed via patch.object"
+        mocker.patch.object(
+        pipeline.text_splitter,  # The specific object to patch
+        'split_documents',       # The method name to replace (as a string)
+        side_effect=ValueError(error_message) # The error to raise
+    )
+        
+        webhook_url = "http://fake-webhook.com/error-splitting"
+        httpx_mock.add_response(url=webhook_url,method="PATCH")
+        
+        # ACT
+        await pipeline.execute("f", "u", "d", "s", "l", webhook_url)
 
-    #     # ACT
-    #     await pipeline.execute("f-fatal", "u", "d", "s", "l", webhook_url)
+        # ASSERT
+        requests = httpx_mock.get_requests()
+        assert len(requests) == 1
+        payload = json.loads(requests[0].content)
+        print(payload)
+        assert payload["status"] == "ERROR"
+        assert payload["errorMessage"] == error_message
+        # --------------------------------------------------
+    def test_dependency_injection_is_working(self):
+        """
+        This test CHECKS if the mock object we pass into the constructor
+        is the SAME object that ends up inside the pipeline instance.
+        """
+        # ARRANGE
+        # 1. สร้าง mock object ขึ้นมา
+        mock_splitter = MagicMock()
+        
+        # 2. พิมพ์ "เลขที่อยู่" ของ mock นี้ออกมาก่อน
+        print(f"\nID of mock_splitter BEFORE init: {id(mock_splitter)}")
 
-    #     # ASSERT
-    #     # ตรวจสอบว่ามีการ print ข้อความ FATAL ออกมาที่ console
-    #     captured = capsys.readouterr()
-    #     assert "FATAL: Could not send status update" in captured.out
+        # 3. ส่ง mock นี้เข้าไปใน constructor
+        pipeline = ProcessingPipeline(
+            text_splitter=mock_splitter,
+            embedding_service=MagicMock(),
+            vector_store_service=MagicMock()
+        )
 
-    # --------------------------------------------------
+        # 4. พิมพ์ "เลขที่อยู่" ของ object ที่อยู่ใน pipeline ออกมา
+        print(f"ID of pipeline.text_splitter AFTER init: {id(pipeline.text_splitter)}")
+
+        # 5. ASSERT: ตรวจสอบว่า "เลขที่อยู่" ทั้งสองอันนี้ต้องเป็นเลขเดียวกัน!
+        assert id(mock_splitter) == id(pipeline.text_splitter)
     #  3. Edge Cases
     # --------------------------------------------------
 
