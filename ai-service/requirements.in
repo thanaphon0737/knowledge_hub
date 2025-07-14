@@ -11,3 +11,7 @@ langchain-google-genai
 langchain-chroma
 httpx
 sentence_transformers
+pytest
+pytest-mock
+pytest-asyncio
+pytest-cov

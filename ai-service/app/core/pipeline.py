@@ -11,7 +11,7 @@ from app.core.embedding_service import EmbeddingService
 from app.core.text_splitter import TextSplitterService
 from app.core.vector_store import VectorStoreService
 from sentence_transformers.cross_encoder import CrossEncoder
-
+import textwrap
 class ProcessingPipeline:
     
     def __init__(self,text_splitter: TextSplitterService,embedding_service: EmbeddingService, vector_store_service: VectorStoreService): 
@@ -19,7 +19,6 @@ class ProcessingPipeline:
         self.embedding_service = embedding_service
         self.vector_store_service = vector_store_service
         print(f"ProcessingPipeline initialized with TextSplitterService and VectorStoreService.")
-
     def _prepare_documents_for_store(
         self,
         chunks: List[Document],
@@ -53,19 +52,19 @@ class ProcessingPipeline:
             print(f'Processing pipeline started for user_id: {user_id}')
             # in future need process image file
             
-            loaded_docs = load_from_source(source_type, source_location)
+            loaded_docs = await load_from_source(source_type, source_location)
             
-            chunks = self.text_splitter.split_documents(loaded_docs)
+            chunks = await self.text_splitter.split_documents(loaded_docs)
             
-            prepared_docs, doc_ids = self._prepare_documents_for_store(chunks, file_id, user_id,document_id)
+            prepared_docs, doc_ids = await self._prepare_documents_for_store(chunks, file_id, user_id,document_id)
             
-            self.vector_store_service.upsert_documents(
+            await self.vector_store_service.upsert_documents(
                 documents=prepared_docs,
                 ids=doc_ids,
             )
             
             print(f'Processing pipeline finished for file_id: {file_id}')
-            print(self.vector_store_service.peek_collection())
+            # print(self.vector_store_service.peek_collection())
             
         except Exception as e:
             status_to_report = 'ERROR'
@@ -149,7 +148,41 @@ class RagPipeline:
 
         Answer:
         """
-        return prompt_template.strip()
+        return textwrap.dedent(prompt_template).strip()
+
+    def _create_llm_prompt(self, question: str, context_docs: List[Document]) -> str:
+        """
+        Builds a prompt by explicitly joining strings to avoid whitespace issues.
+        """
+        context_parts = []
+        for i, doc in enumerate(context_docs):
+            source_info = doc.metadata.get('source', 'Unknown Source')
+            page_info = doc.metadata.get('page', 'N/A')
+            context_part = f"Source [{i+1}] (from: {source_info}, page: {page_info}):\n{doc.page_content}"
+            context_parts.append(context_part)
+        
+        context = "\n\n---\n\n".join(context_parts)
+
+        prompt_lines = [
+            "You are a highly precise and factual assistant. Your main task is to answer the user's question with accuracy, based *ONLY* on the information provided in the \"Sources\" section below.",
+            "",
+            "Instructions:",
+            "1.  Analyze the user's question carefully.",
+            "2.  Read through all the provided sources to find the relevant information.",
+            "3.  Construct your answer using *ONLY* the information from the sources. Do not add any external knowledge or make assumptions.",
+            "4.  If the answer cannot be found in the sources, you *MUST* respond with the exact phrase: \"I cannot find an answer to your question in the provided documents.\"",
+            "5.  (Optional) At the end of your answer, you can cite the sources you used, like `[Source 1]`, `[Source 2]`.",
+            "",
+            "Sources:",
+            context,
+            "",
+            "Question:",
+            question,
+            "",
+            "Answer:"
+        ]
+        
+        return "\n".join(prompt_lines)
 
     async def get_answer(self, user_id: str,document_id: str, question: str) -> Dict[str, Any]:
         
@@ -167,7 +200,8 @@ class RagPipeline:
         final_docs = self._reranker_docuements(question,retrieved_docs, top_n=3)
         
         #  insert finaldocs to prompt
-        prompt = self._build_prompt(question, final_docs)
+        # prompt = self._build_prompt(question, final_docs)
+        prompt = self._create_llm_prompt(question, final_docs)
         print(f'Prompt Template:\n{prompt}')   
         # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
