@@ -191,7 +191,7 @@ class RagPipeline:
         retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {'$and':[{"user_id": {'$eq':user_id}},{"document_id":{'$eq':document_id}}]}})
         
         
-        retrieved_docs = retriever.invoke(question)
+        retrieved_docs = await retriever.invoke(question)
         
         if not retrieved_docs:
             return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
@@ -206,7 +206,7 @@ class RagPipeline:
         print(f'Prompt Template:\n{prompt}')   
         # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
-        response = llm.invoke(prompt)
+        response =  await llm.invoke(prompt)
         generated_answer = response.content
         
         sources = [

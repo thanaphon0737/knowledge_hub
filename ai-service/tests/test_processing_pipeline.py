@@ -110,6 +110,7 @@ class TestProcessingPipelineScenarios:
         assert payload["status"] == "ERROR"
         assert payload["errorMessage"] == error_message
         # --------------------------------------------------
+    
     def test_dependency_injection_is_working(self):
         """
         This test CHECKS if the mock object we pass into the constructor
