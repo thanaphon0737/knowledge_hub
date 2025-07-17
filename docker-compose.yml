@@ -45,7 +45,19 @@ services:
       - ./ai-service/.env
     depends_on:
       - main-backend
-
+  frontend:
+    build:
+      context: ./frontend/front-end-ai-hub
+      dockerfile: Dockerfile
+    ports:
+      - "80:3000"
+    env_file:
+      - ./frontend/front-end-ai-hub/.env.local
+    # environment:
+    #   # This tells Next.js to use the backend's service name
+    #   - NEXT_PUBLIC_API_BASE_URL=http://main-backend:3000
+    depends_on:
+      - main-backend
 volumes:
   db_data:
   shared_uploads:
