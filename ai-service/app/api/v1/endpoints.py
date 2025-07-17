@@ -49,7 +49,7 @@ async def process_document(
 @router.post("/query",
                 response_model=api_model.QueryResponse,
                 tags=["RAG"])
-async def query_document(
+def query_document(
     query_request: api_model.QueryRequest,
     request: Request
 ) -> api_model.QueryResponse:
@@ -57,7 +57,7 @@ async def query_document(
     rag_pipeline: RagPipeline = request.app.state.rag_pipeline
     
     try:
-        result = await rag_pipeline.get_answer(
+        result =  rag_pipeline.get_answer(
             user_id = query_request.user_id,
             document_id = query_request.document_id,
             question = query_request.question,

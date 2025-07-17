@@ -185,13 +185,13 @@ class RagPipeline:
         
         return "\n".join(prompt_lines)
 
-    async def get_answer(self, user_id: str,document_id: str, question: str) -> Dict[str, Any]:
+    def get_answer(self, user_id: str,document_id: str, question: str) -> Dict[str, Any]:
         
         # first step retrieval k=10
         retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {'$and':[{"user_id": {'$eq':user_id}},{"document_id":{'$eq':document_id}}]}})
         
         
-        retrieved_docs = await retriever.invoke(question)
+        retrieved_docs = retriever.invoke(question)
         
         if not retrieved_docs:
             return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
@@ -206,7 +206,7 @@ class RagPipeline:
         print(f'Prompt Template:\n{prompt}')   
         # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
-        response =  await llm.invoke(prompt)
+        response =  llm.invoke(prompt)
         generated_answer = response.content
         
         sources = [
@@ -216,7 +216,7 @@ class RagPipeline:
             }
             for doc in final_docs
         ] 
-        # print(f"Generated Answer: {generated_answer}")
+        print(f"Generated Answer: {generated_answer}")
         # print(f"Sources: {type(sources)}")
         # print(f"Sources: {sources[0]}")
         result = {"answer": generated_answer, "sources": sources}
