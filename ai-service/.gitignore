@@ -10,3 +10,4 @@ chroma_test_db/
 vector_store_db/
 
 .coverage
+fake_api_key/

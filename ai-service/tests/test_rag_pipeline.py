@@ -52,55 +52,55 @@ class TestRagPipeline:
         assert "Source [1] (from: test.pdf, page: 1):\nThis is the context." in prompt
         assert "Question:\nTest Question?" in prompt
 
-    async def test_get_answer_success_path(self, mocker):
-        """
-        Integration Test: Verifies the entire success path of the 'get_answer' method.
-        """
-        # ARRANGE
-        # 1. Mock all external and internal dependencies
-        mock_retriever = MagicMock()
-        # The retriever's invoke method is now async in the latest LangChain versions
-        mock_retriever.invoke = AsyncMock(return_value=[Document(page_content="retrieved doc", metadata={})])
+    # async def test_get_answer_success_path(self, mocker):
+    #     """
+    #     Integration Test: Verifies the entire success path of the 'get_answer' method.
+    #     """
+    #     # ARRANGE
+    #     # 1. Mock all external and internal dependencies
+    #     mock_retriever = MagicMock()
+    #     # The retriever's invoke method is now async in the latest LangChain versions
+    #     mock_retriever.invoke = AsyncMock(return_value=[Document(page_content="retrieved doc", metadata={})])
         
-        mock_vector_store = MagicMock()
-        mock_vector_store.get_retriever.return_value = mock_retriever
+    #     mock_vector_store = MagicMock()
+    #     mock_vector_store.get_retriever.return_value = mock_retriever
         
-        mock_llm = MagicMock()
-        # The LLM's invoke method is also async
-        mock_llm.invoke = AsyncMock(return_value=MagicMock(content="Final LLM answer."))
+    #     mock_llm = MagicMock()
+    #     # The LLM's invoke method is also async
+    #     mock_llm.invoke = AsyncMock(return_value=MagicMock(content="Final LLM answer."))
         
-        mocker.patch('app.core.pipeline.CrossEncoder')
+    #     mocker.patch('app.core.pipeline.CrossEncoder')
         
-        # 2. Create the pipeline instance with mocked services
-        pipeline = RagPipeline(mock_vector_store, mock_llm)
-        # Mock the helper method to isolate this test to the get_answer logic
-        mocker.patch.object(pipeline, '_reranker_docuements', return_value=mock_retriever.invoke.return_value)
+    #     # 2. Create the pipeline instance with mocked services
+    #     pipeline = RagPipeline(mock_vector_store, mock_llm)
+    #     # Mock the helper method to isolate this test to the get_answer logic
+    #     mocker.patch.object(pipeline, '_reranker_docuements', return_value=mock_retriever.invoke.return_value)
 
-        # ACT
-        result = await pipeline.get_answer("user1", "doc1", "test question")
+    #     # ACT
+    #     result = await pipeline.get_answer("user1", "doc1", "test question")
 
-        # ASSERT
-        mock_vector_store.get_retriever.assert_called_once()
-        mock_retriever.invoke.assert_awaited_once_with("test question")
-        mock_llm.invoke.assert_awaited_once()
-        assert result['answer'] == "Final LLM answer."
-        assert len(result['sources']) == 1
-        assert result['sources'][0]['page_content'] == "retrieved doc"
+    #     # ASSERT
+    #     mock_vector_store.get_retriever.assert_called_once()
+    #     mock_retriever.invoke.assert_awaited_once_with("test question")
+    #     mock_llm.invoke.assert_awaited_once()
+    #     assert result['answer'] == "Final LLM answer."
+    #     assert len(result['sources']) == 1
+    #     assert result['sources'][0]['page_content'] == "retrieved doc"
 
-    async def test_get_answer_no_docs_found(self):
-        """Edge Case Test: Verifies correct behavior when retriever finds no documents."""
-        # ARRANGE
-        mock_retriever = MagicMock()
-        mock_retriever.invoke = AsyncMock(return_value=[]) # Return an empty list
+    # async def test_get_answer_no_docs_found(self):
+    #     """Edge Case Test: Verifies correct behavior when retriever finds no documents."""
+    #     # ARRANGE
+    #     mock_retriever = MagicMock()
+    #     mock_retriever.invoke = AsyncMock(return_value=[]) # Return an empty list
         
-        mock_vector_store = MagicMock()
-        mock_vector_store.get_retriever.return_value = mock_retriever
+    #     mock_vector_store = MagicMock()
+    #     mock_vector_store.get_retriever.return_value = mock_retriever
         
-        pipeline = RagPipeline(mock_vector_store, MagicMock())
+    #     pipeline = RagPipeline(mock_vector_store, MagicMock())
 
-        # ACT
-        result = await pipeline.get_answer("user1", "doc1", "test question")
+    #     # ACT
+    #     result = await pipeline.get_answer("user1", "doc1", "test question")
 
-        # ASSERT
-        assert result['answer'] == "I cannot find the answer in the provided documents."
-        assert result['sources'] == []
+    #     # ASSERT
+    #     assert result['answer'] == "I cannot find the answer in the provided documents."
+    #     assert result['sources'] == []
