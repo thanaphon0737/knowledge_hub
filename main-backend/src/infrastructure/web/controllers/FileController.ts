@@ -17,7 +17,7 @@ import { DeleteFilesByUserIdUsecase } from "../../../application//use-cases/file
 import { DeleteFilesByDocumentIdUsecase } from "../../../application/use-cases/file/DeleteFilesByDocumentId.usecase";
 import { DeletesFileByIdUsecase } from "../../../application/use-cases/file/DeleteFileById.usecase";
 
-// -- สร้าง Instance ของ Repository --
+import { supabase } from "../../database/storage"; // Import Supabase client
 
 const fileRepository = new PostgresFileRepository();
 const processingService = new AIServiceClient();
@@ -29,7 +29,7 @@ export const createFileFromUrl: RequestHandler = async (req, res) => {
   const { sourceUrl } = req.body;
   if (!user) {
     res.status(401).json({ message: "Unauthorized" });
-    return
+    return;
   }
   if (!userId) {
     res.status(400).json({ success: false, message: "userId not found" });
@@ -41,23 +41,23 @@ export const createFileFromUrl: RequestHandler = async (req, res) => {
   }
   if (!sourceUrl) {
     res.status(400).json({ success: false, message: "Source Url not found" });
-    return
+    return;
   }
   try {
     const createFileUseCase = new CreateFileUseCase(
       fileRepository,
       processingService
     );
-    console.log('create file with Url')
+    console.log("create file with Url");
     const file = await createFileUseCase.execute({
       userId: userId,
       documentId: documentId,
-      sourceType: 'url',
+      sourceType: "url",
       fileName: sourceUrl,
       sourceLocation: sourceUrl,
       fileSize: 0,
-      fileType: 'text/html',
-      processingStatus: 'PENDING',
+      fileType: "text/html",
+      processingStatus: "PENDING",
     });
 
     const FileResponse: FileCreateDto = {
@@ -70,8 +70,10 @@ export const createFileFromUrl: RequestHandler = async (req, res) => {
       processing_status: file.processing_status,
     };
     res.status(201).json({ success: true, data: FileResponse });
+    return;
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
+    return;
   }
 };
 export const createFile: RequestHandler = async (req, res) => {
@@ -81,10 +83,12 @@ export const createFile: RequestHandler = async (req, res) => {
   const uploadedFile = req.file;
   if (!user) {
     res.status(401).json({ message: "Unauthorized" });
+    return;
   }
 
   if (!uploadedFile) {
     res.status(400).json({ message: "No file uploaded." });
+    return;
   }
   if (!userId) {
     res.status(400).json({ success: false, message: "userId not found" });
@@ -108,20 +112,34 @@ export const createFile: RequestHandler = async (req, res) => {
     });
     return;
   }
-  console.log("recieve file for document: ", documentId);
-  console.log("file details: ", {
-    originalname: uploadedFile?.originalname,
-    mimetype: uploadedFile?.mimetype,
-    size: uploadedFile?.size,
-    buffer: uploadedFile?.buffer,
-  });
+  const originalname = uploadedFile?.originalname || "unknown-file";
+  const bucketName = "knowledge-files";
+  const fileName = `user-docs/${userId}/${Date.now()}-${originalname}`;
+  const buffer = uploadedFile?.buffer;
+  const mimetype = uploadedFile?.mimetype;
+  const { data, error } = await supabase.storage
+    .from(bucketName)
+    .upload(fileName, buffer, {
+      contentType: mimetype,
+      upsert: true,
+    });
 
+  if (error) {
+    throw new Error(`Failed to upload file: ${error.message}`);
+  }
+  console.log("recieve file for document: ", documentId);
+  console.log("fileName: ", fileName);
+  console.log("file size: ", uploadedFile.size);
+  
+  const filePath = data.path; // Path in Supabase Storage
+  console.log("📂 File uploaded to Supabase Storage:", filePath);
   try {
     // สร้างและเรียกใช้ CreateFileUseCase
-    const localFilePath: string = uploadedFile.path;
-    const processingStatus: string = "pending";
-    const sourceType: string = 'upload';
+    // const localFilePath: string = uploadedFile.path;
     
+
+    const sourceType: string = "upload";
+
     const createFileUseCase = new CreateFileUseCase(
       fileRepository,
       processingService
@@ -132,12 +150,11 @@ export const createFile: RequestHandler = async (req, res) => {
       documentId: documentId,
       sourceType: sourceType,
       fileName: uploadedFile?.originalname,
-      sourceLocation: localFilePath,
+      sourceLocation: filePath,
       fileSize: uploadedFile.size,
       fileType: uploadedFile.mimetype,
-      processingStatus: 'PENDING',
-    }
-    );
+      processingStatus: "PENDING",
+    });
 
     const FileResponse: FileCreateDto = {
       document_id: file.document_id,
@@ -149,8 +166,10 @@ export const createFile: RequestHandler = async (req, res) => {
       processing_status: file.processing_status,
     };
     res.status(201).json({ success: true, data: FileResponse });
+    return;
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
+    return;
   }
 };
 
@@ -180,8 +199,10 @@ export const getFileById: RequestHandler = async (req, res) => {
       updated_at: file?.updated_at,
     };
     res.status(200).json({ success: true, data: FileResponse });
+    return;
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
+    return;
   }
 };
 
@@ -213,7 +234,7 @@ export const getFileByDocumentId: RequestHandler = async (req, res) => {
       updated_at: file?.updated_at,
     }));
     res.status(200).json({ success: true, data: FilesResponse });
-    return
+    return;
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

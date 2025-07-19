@@ -353,6 +353,7 @@ regex==2024.11.6
     # via transformers
 requests==2.32.4
     # via
+    #   -r requirements.in
     #   google-api-core
     #   huggingface-hub
     #   kubernetes

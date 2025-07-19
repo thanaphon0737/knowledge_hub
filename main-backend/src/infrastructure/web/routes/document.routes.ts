@@ -22,6 +22,7 @@ router.delete('/documents/:id', authMiddleware, deleteDocument);
 
 // files
 router.get('/documents/:documentId/files',authMiddleware,getFileByDocumentId);
+//upload file
 router.post('/documents/:documentId/files/upload',authMiddleware,upload.single('file'),createFile)
 router.post('/documents/:documentId/files/url',authMiddleware,createFileFromUrl)
 router.delete('/documents/:documentId/files',authMiddleware,deleteFilesByDocumentId)
