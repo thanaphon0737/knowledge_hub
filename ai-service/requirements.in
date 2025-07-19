@@ -16,3 +16,4 @@ pytest-mock
 pytest-asyncio
 pytest-cov
 pytest-httpx
+requests

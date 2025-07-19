@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.52.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "axios": "^1.10.0",
@@ -38,6 +39,7 @@
     "jest": "^30.0.0",
     "jest-mock-extended": "^4.0.0",
     "nodemon": "^3.1.10",
+    "supabase": "^2.31.4",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

@@ -2,6 +2,53 @@ import os
 from langchain.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain_core.documents import Document
 from typing import List
+import requests
+
+def download_file_from_url(signed_url: str, save_directory: str = "temp_files") -> str | None:
+    """
+    Downloads a file from a given URL and saves it to a local directory.
+
+    Args:
+        signed_url (str): The temporary signed URL from Supabase.
+        save_directory (str): The local directory to save the file in.
+
+    Returns:
+        str | None: The full local path to the downloaded file, or None if failed.
+    """
+    try:
+        print(f"Attempting to download file from signed URL...")
+        response = requests.get(signed_url, stream=True)
+        
+        # Check if the request was successful (status code 200)
+        response.raise_for_status()
+
+        # Extract original filename from the URL's headers if possible, or create a generic one
+        # This part is optional but good practice
+        content_disposition = response.headers.get('content-disposition')
+        if content_disposition:
+            # A simple way to parse the filename
+            filename = content_disposition.split('filename=')[-1].strip('"')
+        else:
+            filename = signed_url.split('/')[-1].split('?')[0] # Fallback filename
+
+        # Create the save directory if it doesn't exist
+        os.makedirs(save_directory, exist_ok=True)
+        local_filepath = os.path.join(save_directory, filename)
+
+        print(f"Saving downloaded file to: {local_filepath}")
+        
+        # Write the file content chunk by chunk
+        with open(local_filepath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        print("File downloaded successfully.")
+        return local_filepath
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading file: {e}")
+        return None
+
 def load_from_source(source_type:str,source_location: str)-> List[Document]:
     """Load a document from a specified source type and location.
     Args:
@@ -19,11 +66,13 @@ def load_from_source(source_type:str,source_location: str)-> List[Document]:
     loader = None
     text_content = ""
     if source_type == 'upload':
-        if not os.path.exists(source_location):
-            raise FileNotFoundError(f"The file {source_location} does not exist.")
-        file_extension = os.path.splitext(source_location)[1].lower()
+        sigend_url = source_location  # Assume this is a signed URL from Supabase
+        local_file_path = download_file_from_url(sigend_url)
+        if not os.path.exists(local_file_path):
+            raise FileNotFoundError(f"The file {local_file_path} does not exist.")
+        file_extension = os.path.splitext(local_file_path)[1].lower()
         if file_extension == '.pdf':
-            loader = PyPDFLoader(source_location)
+            loader = PyPDFLoader(local_file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_extension}")
     elif source_type == 'url':
