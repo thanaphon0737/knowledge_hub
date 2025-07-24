@@ -30,7 +30,11 @@ This project is a personal knowledge management system that uses AI to understan
 - [x] **(Frontend)** Create Chat Interface for Q&A
 - [x] **(Backend)** Create gateway API for the chat flow
 - [x] **(Integration)** Implement end-to-end Q&A flow
+
+### emergency to do
+- [ ] **(database on cloud)** migrate database on cloud
 - [ ] **(Build Agent)** Build AI Agent for get smarter RAG
+- [ ] **(Auth supabase)** sync Auth with supabase for RLS 
 
 ### Phase 4: CI/CD & Polish (Week 4)
 - [ ] Create Dockerfile for each service
