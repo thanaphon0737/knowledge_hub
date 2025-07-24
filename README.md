@@ -27,9 +27,10 @@ This project is a personal knowledge management system that uses AI to understan
 
 ### Phase 3: RAG & Chat Interface (Week 3)
 - [x] **(AI Service)** Create API endpoint to handle questions and perform RAG
-- [ ] **(Frontend)** Create Chat Interface for Q&A
+- [x] **(Frontend)** Create Chat Interface for Q&A
 - [x] **(Backend)** Create gateway API for the chat flow
-- [ ] **(Integration)** Implement end-to-end Q&A flow
+- [x] **(Integration)** Implement end-to-end Q&A flow
+- [ ] **(Build Agent)** Build AI Agent for get smarter RAG
 
 ### Phase 4: CI/CD & Polish (Week 4)
 - [ ] Create Dockerfile for each service
