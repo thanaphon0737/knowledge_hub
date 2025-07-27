@@ -1,6 +1,8 @@
 import axios from "axios";
 import { cookies } from "next/headers";
+import { createClient } from "./supabase/client";
 
+const supabase = await createClient();
 // We create a new, separate Axios instance for server-side calls.
 const serverApiClient = axios.create({
   // When running inside Docker, we use the internal service name.
@@ -16,8 +18,8 @@ const serverApiClient = axios.create({
 export async function apiGetDocumentServer(id: string) {
   // 1. Read the cookie from the incoming browser request.
   //    The `cookies()` function from `next/headers` gives us server-side access to the request cookies.
-  const tokenCookie = (await cookies()).get("access_token");
-
+  const tokenCookie = await (await supabase.auth.getSession()).data.session?.access_token;
+  console.log("Token cookie from server:", tokenCookie);
   if (!tokenCookie) {
     // If there's no cookie, we know the user isn't logged in.
     console.log("No auth token cookie found on server.");
@@ -27,7 +29,7 @@ export async function apiGetDocumentServer(id: string) {
   // 2. Prepare the authorization header in the standard "Bearer" format.
   //    This is how we will pass the token to our backend.
   const headers = {
-    Authorization: `Bearer ${tokenCookie.value}`,
+    Authorization: `Bearer ${tokenCookie}`,
   };
 
   // 3. Make the API call, passing the custom headers.

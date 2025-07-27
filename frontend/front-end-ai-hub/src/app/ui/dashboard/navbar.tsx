@@ -15,14 +15,15 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import Link from "next/link";
 
-import {useRouter} from "next/navigation";
-import { useTransition } from 'react';
-import { logoutAction } from '@/app/actions';
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 const pages = ["Dashboard", "Chat", "Blog"];
 const routes = ["dashboard", "dashboard/chat", ""];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const supabase = createClient();
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({ user }: { user: any }) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -42,27 +43,31 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = async (setting:string) => {
-    
+  const handleCloseUserMenu = async (setting: string) => {
     setAnchorElUser(null);
     switch (setting) {
-    case 'Profile':
-      router.push('/profile');
-      break;
-    case 'Account':
-      router.push('/account');
-      break;
-    case 'Logout':
-      // Use startTransition for server actions to avoid blocking the UI
-      startTransition(() => {
-        logoutAction();
-      });
-      break;
-    default:
-      // Optional: handle other cases or do nothing
-      break;
+      case "Profile":
+        router.push("/profile");
+        break;
+      case "Account":
+        router.push("/account");
+        break;
+      case "Logout":
+        
+        await supabase.auth.signOut();
+
+        // หลังจาก logout ให้ redirect ไปหน้า login
+        router.push("/login");
+
+        // และ refresh เพื่อให้แน่ใจว่า server state ถูกล้างค่าทั้งหมด
+        router.refresh();
+
+        break;
+      default:
+        // Optional: handle other cases or do nothing
+        break;
+    }
   };
-  }
 
   return (
     <AppBar position="static">
@@ -116,7 +121,7 @@ function ResponsiveAppBar() {
             >
               {pages.map((page, index) => (
                 <Link key={page} href={`/${routes[index].toLocaleLowerCase()}`}>
-                  <MenuItem  onClick={handleCloseNavMenu}>
+                  <MenuItem onClick={handleCloseNavMenu}>
                     <Typography sx={{ textAlign: "center" }}>{page}</Typography>
                   </MenuItem>
                 </Link>
@@ -143,24 +148,30 @@ function ResponsiveAppBar() {
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page,index) => (
+            {pages.map((page, index) => (
               <Link key={page} href={`/${routes[index].toLocaleLowerCase()}`}>
-              <Button
-                
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block" }}
+                <Button
+                  onClick={handleCloseNavMenu}
+                  sx={{ my: 2, color: "white", display: "block" }}
                 >
-                {page}
-              </Button>
-                </Link>
+                  {page}
+                </Button>
+              </Link>
             ))}
           </Box>
           <Box sx={{ flexGrow: 0 }}>
+            {/* {display user profile} */}
+            {user && (
+              <Typography sx={{ color: "white", mr: 2 }}>
+                {user.email}
+              </Typography>
+            )}
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src="" />
               </IconButton>
             </Tooltip>
+            
             <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
@@ -178,7 +189,12 @@ function ResponsiveAppBar() {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={() => {handleCloseUserMenu(setting)}}>
+                <MenuItem
+                  key={setting}
+                  onClick={() => {
+                    handleCloseUserMenu(setting);
+                  }}
+                >
                   <Typography sx={{ textAlign: "center" }}>
                     {setting}
                   </Typography>

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAuth} from '@/context/AuthContext';
-import { useRouter} from 'next/navigation';
+import { redirect, useRouter} from 'next/navigation';
 import {
   Container,
   Box,
@@ -13,24 +13,32 @@ import {
 } from "@mui/material";
 import {Grid} from "@mui/material";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { revalidatePath } from "next/cache";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const {login} = useAuth();
+  const [error, setError] = useState(null);
   const router = useRouter();
-
+  const supabase = createClient();
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(null);
     try {
-      await login({email,password})
+      const {error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
       
-      router.push('/dashboard')
+      //  router.refresh();
+      revalidatePath('/private', 'layout');
+      redirect('/private');
+      // router.push('/dashboard')
 
     } catch (err: any) {
         console.log(err)

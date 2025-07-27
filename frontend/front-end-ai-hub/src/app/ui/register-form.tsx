@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 import {
   Container,
   Box,
@@ -13,27 +15,48 @@ import {
   Grid,
 } from "@mui/material";
 import Link from "next/link";
-import {useAuth} from '@/context/AuthContext'
-import {useRouter} from 'next/navigation'
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
-export default function RegisterForm() {
+export default function RegisterForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-    const { register } = useAuth();
-  const handleSubmit = async (e:any) => {
+  const { register } = useAuth();
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
+    const supabase = createClient();
+
     setLoading(true);
     setError("");
+    if (password !== repeatPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
     try {
-      await 
-      register({email,password});
-      router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.response?.data?.message || "An unexpected error occurred.");
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) {
+        console.error("Error signing up:", error);
+        throw error;
+      }
+
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -86,6 +109,29 @@ export default function RegisterForm() {
               ),
             }}
           />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="repeatpassword"
+            label="Repeat Password"
+            type={showPassword ? "text" : "password"}
+            id="repeatpassword"
+            value={repeatPassword}
+            onChange={(e) => setRepeatPassword(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {/* {showPassword ? <VisibilityOff /> : <Visibility />} */}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
@@ -101,7 +147,7 @@ export default function RegisterForm() {
             {loading ? <CircularProgress size={24} /> : "Sign Up"}
           </Button>
           <Grid container justifyContent="flex-end">
-            <Grid >
+            <Grid>
               <Link href="/login">
                 <Button size="small">Already have an account? Sign In</Button>
               </Link>
