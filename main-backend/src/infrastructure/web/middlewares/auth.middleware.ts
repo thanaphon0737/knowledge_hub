@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as jwt from "jsonwebtoken";
+import { jwtVerify, createRemoteJWKSet } from 'jose'
+
 import "dotenv/config";
 
 declare global {
@@ -13,37 +15,32 @@ declare global {
   }
 }
 
-export const authMiddleware = (
+const PROJECT_JWKS = createRemoteJWKSet(
+  new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`)
+)
+/**
+ * Verifies the provided JWT against the project's JSON Web Key Set.
+ */
+async function verifyProjectJWT(jwt: string) {
+  return jwtVerify(jwt, PROJECT_JWKS)
+}
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let token: string | undefined;
-
-  // const token = req.cookies.access_token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer ")
-  ) {
-    console.log("Found token in Authorization header.");
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies.access_token) {
-    console.log("Found token in cookie.");
-    token = req.cookies.access_token;
-  }
+  
+  const token = req.headers.authorization?.split(" ")[1];
+  
   if (!token) {
     res.status(401).json({ success: false, message: "No token provided" });
     return;
   }
   try {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error("JWT_SECRET is not defined in environment variables");
-    }
-    const decoded = jwt.verify(token, jwtSecret as string);
+    const { payload } = await verifyProjectJWT(token);
     req.user = {
-      id: (decoded as any).userId, // Assuming the token contains userId
-      email: (decoded as any).email, // Assuming the token contains email
+      id: payload.sub as string,
+      email: payload.email as string,
     };
     next();
   } catch (error) {

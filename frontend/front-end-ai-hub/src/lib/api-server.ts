@@ -1,8 +1,6 @@
 import axios from "axios";
 import { cookies } from "next/headers";
-import { createClient } from "./supabase/client";
-
-const supabase = await createClient();
+import { createClient } from "./supabase/server";
 // We create a new, separate Axios instance for server-side calls.
 const serverApiClient = axios.create({
   // When running inside Docker, we use the internal service name.
@@ -16,20 +14,21 @@ const serverApiClient = axios.create({
  * It reads the auth cookie and forwards it in the Authorization header.
  */
 export async function apiGetDocumentServer(id: string) {
-  // 1. Read the cookie from the incoming browser request.
-  //    The `cookies()` function from `next/headers` gives us server-side access to the request cookies.
-  const tokenCookie = await (await supabase.auth.getSession()).data.session?.access_token;
-  console.log("Token cookie from server:", tokenCookie);
-  if (!tokenCookie) {
-    // If there's no cookie, we know the user isn't logged in.
-    console.log("No auth token cookie found on server.");
+  // 1. Create server-side Supabase client
+  const supabase = await createClient();
+  
+  // 2. Get the session from Supabase
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.access_token) {
+    console.log("No auth token found on server:", error?.message);
     throw new Error("Not authenticated");
   }
 
-  // 2. Prepare the authorization header in the standard "Bearer" format.
+  // 3. Prepare the authorization header in the standard "Bearer" format.
   //    This is how we will pass the token to our backend.
   const headers = {
-    Authorization: `Bearer ${tokenCookie}`,
+    Authorization: `Bearer ${session.access_token}`,
   };
 
   // 3. Make the API call, passing the custom headers.
@@ -58,18 +57,21 @@ export async function apiGetDocumentServer(id: string) {
 }
 
 export async function apiGetFilesServer(id: string) {
-  const tokenCookie = (await cookies()).get("access_token");
-
-  if (!tokenCookie) {
-    // If there's no cookie, we know the user isn't logged in.
-    console.log("No auth token cookie found on server.");
+  // 1. Create server-side Supabase client
+  const supabase = await createClient();
+  
+  // 2. Get the session from Supabase
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.access_token) {
+    console.log("No auth token found on server:", error?.message);
     throw new Error("Not authenticated");
   }
 
-  // 2. Prepare the authorization header in the standard "Bearer" format.
+  // 3. Prepare the authorization header in the standard "Bearer" format.
   //    This is how we will pass the token to our backend.
   const headers = {
-    Authorization: `Bearer ${tokenCookie.value}`,
+    Authorization: `Bearer ${session.access_token}`,
   };
 
   // 3. Make the API call, passing the custom headers.
