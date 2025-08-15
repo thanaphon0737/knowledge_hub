@@ -73,6 +73,7 @@ def query_document(
             user_id = query_request.user_id,
             document_id = query_request.document_id,
             question = query_request.question,
+            history = query_request.history
         )
         # print(f"Query result: {result}")
         return api_model.QueryResponse(

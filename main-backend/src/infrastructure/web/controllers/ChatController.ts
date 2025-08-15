@@ -5,7 +5,7 @@ const AI_SERVICE_URL_QUERY_URL = process.env.AI_SERVICE_URL_QUERY_URL;
 
 export const handleUserQuery: RequestHandler = async (req, res) => {
   const user = req.user;
-  const { question, documentId } = req.body;
+  const { question, documentId, sessionId, history } = req.body;
   if (!user) {
     res.status(401).json({ message: "Unauthorize" });
     return;
@@ -21,7 +21,11 @@ export const handleUserQuery: RequestHandler = async (req, res) => {
     res.status(500).json({ success: false, message: "AI service URL is not configured." });
     return;
   }
-  console.log(`frontend body send for query: ${req.body.question} ${req.body.document_id}`)
+  console.log(`frontend body send for query: ${req.body.question}`)
+  console.log(`user: ${user.id}`) 
+  console.log(`sessionId: ${sessionId}`)
+  console.log(`history: ${history}`)
+  console.log(`documentId: ${documentId}`)
   try {
     console.log(`Forwarding query to AI service for user: ${user.id}`);
     
@@ -29,6 +33,8 @@ export const handleUserQuery: RequestHandler = async (req, res) => {
       user_id: user.id,
       document_id: documentId,
       question: question,
+      session_id: sessionId,
+      history: Array.isArray(history) ? history : undefined,
     //   document_ids: document_ids,
     });
 

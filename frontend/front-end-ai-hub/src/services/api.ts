@@ -54,6 +54,18 @@ export function apiCreateFileWithUrl(documentId: string, sourceUrl:string){
   return apiClient.post(`/documents/${documentId}/files/url`,payload)
 }
 
-export function apiQueryQuestion(question:string,documentId:string){
-  return apiClient.post(`/query`,{question:question,documentId:documentId})
+export type ChatHistoryItem = { role: 'user' | 'assistant'; content: string };
+
+export function apiQueryQuestion(
+  question: string,
+  documentId: string,
+  sessionId?: string,
+  history?: ChatHistoryItem[]
+){
+  return apiClient.post(`/query`,{
+    question: question,
+    documentId: documentId,
+    sessionId: sessionId,
+    history: history
+  })
 }

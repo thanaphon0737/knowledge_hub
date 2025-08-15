@@ -2,7 +2,7 @@
 import { Send } from "@mui/icons-material";
 import { Box, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material";
 import { useState,useRef,useEffect } from "react";
-import { apiQueryQuestion } from "@/services/api";
+import { apiQueryQuestion, ChatHistoryItem } from "@/services/api";
 type Message = {
     role: 'user' | 'ai';
     content: string;
@@ -12,6 +12,10 @@ type Message = {
 
 export default function ChatInteract({ documentId }: { documentId: string }){
     const [messages, setMessages] = useState<Message[]>([]);
+    const [sessionId] = useState<string>(() => {
+        // simple client-only session id; ideally comes from backend when creating a chat
+        return typeof crypto !== 'undefined' ? crypto.randomUUID() : `${Date.now()}`;
+    });
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -26,7 +30,13 @@ export default function ChatInteract({ documentId }: { documentId: string }){
         setLoading(true);
         try {
             console.log(`input: ${input}, doc_id: ${documentId}`)
-            const result = await apiQueryQuestion(input,documentId);
+            // map UI messages to API history schema
+            const history: ChatHistoryItem[] = messages.map(m => ({
+                role: m.role === 'ai' ? 'assistant' : 'user',
+                content: m.content
+            }));
+            console.log(`history: ${history.length}`)
+            const result = await apiQueryQuestion(input, documentId, sessionId, history);
             const aiMessage: Message = { role: 'ai', content: result.data.answer, sources: result.data.sources };
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
