@@ -26,6 +26,12 @@ async def process_document(
     
     processing_pipeline: ProcessingPipeline = request.app.state.processing_pipeline
     
+    if not processing_pipeline:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Processing service is not available. Service may still be initializing."
+        )
+    
     try:
         await processing_pipeline.execute(
             file_id = process_request.file_id,
@@ -56,11 +62,18 @@ def query_document(
     
     rag_pipeline: RagPipeline = request.app.state.rag_pipeline
     
+    if not rag_pipeline:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="RAG service is not available. Service may still be initializing."
+        )
+    
     try:
         result =  rag_pipeline.get_answer(
             user_id = query_request.user_id,
             document_id = query_request.document_id,
             question = query_request.question,
+            history = query_request.history
         )
         # print(f"Query result: {result}")
         return api_model.QueryResponse(

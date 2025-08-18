@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List,Dict,Any
+from typing import Optional, List,Dict,Any, Literal
 class HealthCheckResponse(BaseModel):
     status: str = Field(..., description="Health status of the service")
     message: Optional[str] = Field(None, description="Optional message providing additional information about the health status")
@@ -27,6 +27,11 @@ class QueryRequest(BaseModel):
     user_id: str = Field(None, description="Optional user identifier for tracking purposes")
     document_id: str
     question: str = Field(..., description="The question to be answered")
+    session_id: Optional[str] = Field(None, description="Conversation/session identifier for chat memory")
+    history: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="List of prior chat messages as dicts: {'role': 'user'|'assistant', 'content': str}"
+    )
 
     
 class QueryResponse(BaseModel):

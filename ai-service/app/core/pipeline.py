@@ -185,25 +185,112 @@ class RagPipeline:
         
         return "\n".join(prompt_lines)
 
-    def get_answer(self, user_id: str,document_id: str, question: str) -> Dict[str, Any]:
+    def _format_history(self, history: Optional[List[Dict[str, str]]], max_turns: int = 6) -> str:
+        if not history:
+            return ""
+        # keep only last N messages
+        trimmed = history[-max_turns:]
+        lines = []
+        for msg in trimmed:
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            if not content:
+                continue
+            role_label = 'User' if role == 'user' else 'Assistant'
+            lines.append(f"{role_label}: {content}")
+        return "\n".join(lines)
+
+    def _condense_question(self, question: str, history: Optional[List[Dict[str, str]]]) -> str:
+        if not history or not self.llm:
+            return question
+        convo = self._format_history(history, max_turns=8)
+        prompt = f"""
+            Rewrite the user's latest question into a standalone query that can be understood without prior conversation.
+            Only rewrite; do not answer.
+
+            Conversation so far:
+            {convo}
+
+            Latest user question:
+            {question}
+            """
+        try:
+            rewritten = self.llm.invoke(textwrap.dedent(prompt).strip()).content
+            return rewritten.strip() or question
+        except Exception:
+            return question
+
+    def _create_reasoning_prompt(self, question: str, context_docs: List[Document], conversation_context: str = "") -> str:
+        """Build a CoT + ReAct + self-reflection prompt that keeps reasoning internal and outputs a concise, grounded answer with citations."""
+        # format sources with stable IDs and rich metadata
+        lines = []
+        id_map = []
+        for i, doc in enumerate(context_docs, start=1):
+            file_id = doc.metadata.get('file_id', 'unknown-file')
+            chunk_no = doc.metadata.get('chunk_number', 'N/A')
+            page = doc.metadata.get('page', 'N/A')
+            src = doc.metadata.get('source', 'Unknown Source')
+            header = f"S{i} (file_id={file_id}, chunk={chunk_no}, page={page}, source={src})"
+            body = doc.page_content
+            lines.append(f"{header}:\n{body}")
+            id_map.append(f"S{i} -> file_id={file_id}, chunk={chunk_no}")
+        sources_block = "\n\n---\n\n".join(lines) if lines else "(no sources)"
+        mapping_note = ", ".join(id_map)
+
+        convo_block = f"Conversation Context:\n{conversation_context}\n\n" if conversation_context else ""
+
+        prompt = f"""
+            You are an expert RAG assistant. Answer using ONLY the information in Sources. Do not invent facts.
+
+            Think step-by-step internally (do not reveal your chain-of-thought). Follow this process:
+            - Plan: silently break the question into sub-questions.
+            - Evidence: silently collect atomic facts from the Sources with their IDs (S#).
+            - Reason: silently combine facts to derive the answer.
+            - Reflect: silently verify the answer is directly supported by cited facts, detect contradictions, and check that wording does not exceed evidence. If evidence is insufficient, say you cannot answer from the documents and suggest 1-2 clarifying questions.
+
+            When you respond, output ONLY the following sections:
+            Final Answer: <a concise, direct answer grounded in the sources. If unknown, say you cannot answer from the provided documents and include 1-2 clarifying questions>
+            Citations: <list S# you relied on, e.g., S1, S3>
+            Confidence: <High|Medium|Low based on amount/consistency of evidence>
+
+            Question:
+            {question}
+
+            {convo_block}
+            Sources:
+            {sources_block}
+
+            (Note for grounding: {mapping_note})
+            """
+        return textwrap.dedent(prompt).strip()
+
+    def get_answer(self, user_id: str,document_id: str, question: str, history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         
-        # first step retrieval k=10
-        retriever = self.vector_store.get_retriever(search_kwargs={'k': 10,"filter": {'$and':[{"user_id": {'$eq':user_id}},{"document_id":{'$eq':document_id}}]}})
+        # first step retrieval k=12 for broader recall
+        retriever = self.vector_store.get_retriever(search_kwargs={'k': 12,"filter": {'$and':[{"user_id": {'$eq':user_id}},{"document_id":{'$eq':document_id}}]}})
         
-        
-        retrieved_docs = retriever.invoke(question)
+        # rewrite question using chat history for better retrieval
+        print(f"History: {history}")
+        rewritten_question = self._condense_question(question, history)
+        if rewritten_question != question:
+            print(f"Rewritten question: {rewritten_question}")
+        retrieved_docs = retriever.invoke(rewritten_question)
         
         if not retrieved_docs:
-            return {"answer": "I cannot find the answer in the provided documents.", "sources": []}
+            message = (
+                "I couldn't find relevant information in your documents to answer that. "
+                "Try adding more content or rephrasing the question with specific keywords you expect to be in the document."
+            )
+            return {"answer": message, "sources": []}
         
         
         # second step re ranking n =3
         final_docs = self._reranker_docuements(question,retrieved_docs, top_n=3)
         
         #  insert finaldocs to prompt
-        # prompt = self._build_prompt(question, final_docs)
-        prompt = self._create_llm_prompt(question, final_docs)
-        print(f'Prompt Template:\n{prompt}')   
+        conversation_context = self._format_history(history, max_turns=6)
+        prompt = self._create_reasoning_prompt(question, final_docs, conversation_context)
+        # print(f'Prompt Template:\n{prompt}')   
         # print(f'Retrive Docs: {retrieved_docs}')
         llm = self.llm
         response =  llm.invoke(prompt)
@@ -217,10 +304,7 @@ class RagPipeline:
             for doc in final_docs
         ] 
         print(f"Generated Answer: {generated_answer}")
-        # print(f"Sources: {type(sources)}")
-        # print(f"Sources: {sources[0]}")
         result = {"answer": generated_answer, "sources": sources}
-        # response_ans = json.dumps(result, indent=2, ensure_ascii=False)
         return result
 
 if __name__ == "__main__":
@@ -269,7 +353,7 @@ if __name__ == "__main__":
             docs = [Document(page_content="The registration date for new students is October 15th.", metadata={"file_id":"manual-doc"})]
             vector_store_service.upsert_documents(docs, ids=["manual-doc_chunk_0"])
 
-
+        
         # --- Example: Run the RAG Pipeline ---
         # This simulates receiving a query from a user.
         result = await rag_pipeline.get_answer(

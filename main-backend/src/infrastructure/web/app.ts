@@ -7,7 +7,7 @@ const app: Application = express();
 const corsOption = {
 
     // origin: 'http://localhost:3001',
-    origin: ['http://localhost:3001','http://localhost'],
+    origin: ['http://localhost:3001','http://localhost:80','http://localhost'],
     // origin: '*', // for dev
     credentials: true,
 }

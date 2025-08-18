@@ -1,9 +1,11 @@
 
-import { getCurrentUser } from "@/lib/session";
+
 import { redirect } from "next/navigation";
 import DocumentCard from "@/app/ui/dashboard/document-card";
+import { createClient } from "@/lib/supabase/server";
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect("/login");
